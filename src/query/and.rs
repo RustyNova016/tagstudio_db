@@ -1,16 +1,12 @@
-use core::ops::AddAssign;
-
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
 
-pub struct TagAnd(pub Queryfragments, pub Queryfragments);
+pub struct QueryAnd(pub Queryfragments, pub Queryfragments);
 
-impl TagAnd {
+impl QueryAnd {
     pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
         let q_a = self.0.get_subquery(bind_id);
-        bind_id.add_assign(1);
         let q_b = self.1.get_subquery(bind_id);
-        bind_id.add_assign(1);
 
         match (q_a, q_b) {
             (Some(a), Some(b)) => Some(format!("{a}, {b}")),
@@ -22,9 +18,7 @@ impl TagAnd {
 
     pub fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         let q_a = self.0.get_where_condition(bind_id);
-        bind_id.add_assign(1);
         let q_b = self.1.get_where_condition(bind_id);
-        bind_id.add_assign(1);
 
         match (q_a, q_b) {
             (Some(a), Some(b)) => Some(format!("({a} AND {b})")),
@@ -40,8 +34,8 @@ impl TagAnd {
     }
 }
 
-impl From<TagAnd> for Queryfragments {
-    fn from(value: TagAnd) -> Self {
+impl From<QueryAnd> for Queryfragments {
+    fn from(value: QueryAnd) -> Self {
         Queryfragments::And(Box::new(value))
     }
 }
@@ -49,17 +43,17 @@ impl From<TagAnd> for Queryfragments {
 #[cfg(test)]
 pub mod test {
     use crate::query::Queryfragments;
-    use crate::query::and::TagAnd;
-    use crate::query::tag_eq::TagEq;
+    use crate::query::and::QueryAnd;
+    use crate::query::eq_tag::EqTag;
     use crate::tests::fixtures::test_data::get_test_library;
 
     #[tokio::test]
     pub async fn tag_and_test() {
         let lib = get_test_library().await;
 
-        let result = Queryfragments::from(TagAnd(
-            TagEq::from("Maxwell").into(),
-            TagEq::from("Doge").into(),
+        let result = Queryfragments::from(QueryAnd(
+            EqTag::from("Maxwell").into(),
+            EqTag::from("Doge").into(),
         ))
         .fetch_all(&mut lib.db.get().await.unwrap())
         .await

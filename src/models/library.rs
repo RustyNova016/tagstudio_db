@@ -8,6 +8,7 @@ use tracing::debug;
 use crate::client::conn_pool::PoolManager;
 use crate::client::conn_pool::TSConnectionPool;
 
+/// A struct representing a TagStudio library.
 pub struct Library {
     pub path: PathBuf,
     pub db: TSConnectionPool,

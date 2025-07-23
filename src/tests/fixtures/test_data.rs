@@ -16,7 +16,7 @@ PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 INSERT INTO folders VALUES(0,'/tmp/','uuid');
 
-INSERT INTO entries VALUES(0,0,'maxwell.png','test.png','.png',NULL,NULL,NULL);
+INSERT INTO entries VALUES(0,0,'maxwell.png','maxwell.png','.png',NULL,NULL,NULL);
 INSERT INTO entries VALUES(1,0,'doge.png','doge.png','.png',NULL,NULL,NULL);
 INSERT INTO entries VALUES(2,0,'doge_and_maxwell.png','doge_and_maxwell.png','.jpeg',NULL,NULL,NULL);
 
@@ -35,5 +35,7 @@ INSERT INTO tag_entries VALUES(1001,0);
 INSERT INTO tag_entries VALUES(1003,1);
 INSERT INTO tag_entries VALUES(1003,2);
 INSERT INTO tag_entries VALUES(1001,2);
+
+INSERT INTO text_fields VALUES('A very dingus cat', 1, 'DESCRIPTION', 0, 0);
 COMMIT;
 "#;
