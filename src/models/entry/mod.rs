@@ -3,10 +3,12 @@ use std::path::PathBuf;
 
 use chrono::NaiveDateTime;
 use futures::Stream;
+use sqlx::Acquire;
 use sqlx::FromRow;
 use tracing::debug;
 
 use crate::models::folder::Folder;
+use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
 use crate::query::Queryfragments;
 
@@ -133,6 +135,24 @@ impl Entry {
         .await?)
     }
 
+    pub async fn get_tags(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<Vec<Tag>, crate::Error> {
+        Ok(sqlx::query_as!(
+            Tag,
+            "SELECT `tags`.* 
+            FROM `entries` 
+                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`
+                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`
+            WHERE
+                `entries`.`id` = ?",
+            self.id
+        )
+        .fetch_all(conn)
+        .await?)
+    }
+
     pub async fn add_tag(
         &self,
         conn: &mut sqlx::SqliteConnection,
@@ -146,6 +166,22 @@ impl Entry {
         )
         .execute(conn)
         .await?;
+        Ok(())
+    }
+
+    pub async fn add_tags(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        tags: &Vec<Tag>,
+    ) -> Result<(), crate::Error> {
+        let mut trans = conn.begin().await?;
+
+        for tag in tags {
+            self.add_tag(&mut trans, tag.id).await?;
+        }
+
+        trans.commit().await?;
+
         Ok(())
     }
 }

@@ -38,6 +38,7 @@ impl TagAlias {
         }
 
         if TagAlias::find_by_name(conn, name, tag_id).await?.is_empty() {
+            debug!("Adding Alias `{name}` to tag `{}`", tag_id);
             sqlx::query!(
                 "INSERT INTO `tag_aliases` VALUES (NULL, ?, ?)",
                 name,
@@ -46,7 +47,7 @@ impl TagAlias {
             .execute(conn)
             .await?;
         } else {
-            debug!("Ignoring alias {name}");
+            debug!("Ignoring alias addition {name}");
         }
 
         Ok(())

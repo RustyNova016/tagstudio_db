@@ -45,6 +45,20 @@ impl Tag {
         .await?)
     }
 
+    pub async fn get_by_name_or_insert_new(
+        conn: &mut sqlx::SqliteConnection,
+        name: &str,
+    ) -> Result<Vec<Self>, crate::Error> {
+        let tags = Self::find_tag_by_name(conn, name).await?;
+
+        if !tags.is_empty() {
+            return Ok(tags);
+        }
+
+        let tag = Self::from(name).insert_tag(conn).await?;
+        Ok(vec![tag])
+    }
+
     /// Rename the current tag. If not disabled, the old name will be added as an alias
     ///
     /// `self` is not mutated unless the result is `Ok`. So it's safe to use, even after getting an `Err`
@@ -164,11 +178,9 @@ impl Tag {
         name: &str,
     ) -> Result<(), crate::Error> {
         if self.name == name {
-            debug!("Ignoring alias {name}");
+            debug!("Ignoring alias addition {name}");
             return Ok(());
         }
-
-        debug!("Adding Alias `{name}` to tag `{}` ({})", self.name, self.id);
 
         TagAlias::insert_tag_alias(conn, name, self.id).await
     }
@@ -193,6 +205,22 @@ impl Tag {
         Ok(())
     }
 
+    pub async fn add_parents(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        tags: &Vec<Tag>,
+    ) -> Result<(), crate::Error> {
+        let mut trans = conn.begin().await?;
+
+        for tag in tags {
+            self.add_parent(&mut trans, tag.id).await?;
+        }
+
+        trans.commit().await?;
+
+        Ok(())
+    }
+
     pub async fn add_child(
         &self,
         conn: &mut sqlx::SqliteConnection,
@@ -210,6 +238,22 @@ impl Tag {
         )
         .execute(conn)
         .await?;
+        Ok(())
+    }
+
+    pub async fn add_children(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        tags: &Vec<Tag>,
+    ) -> Result<(), crate::Error> {
+        let mut trans = conn.begin().await?;
+
+        for tag in tags {
+            self.add_child(&mut trans, tag.id).await?;
+        }
+
+        trans.commit().await?;
+
         Ok(())
     }
 

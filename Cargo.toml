@@ -4,6 +4,10 @@ description = "Rust bindings for TagStudio databases"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85.0"
+authors = ["RustyNova"]
+license = "GPL-3.0-or-later"
+keywords = ["sqlx", "database", "TagStudio", "development"]
+repository = "https://github.com/RustyNova016/tagstudio_db"
 
 [dependencies]
 sqlx = { version = "0.8.6", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
@@ -14,6 +18,7 @@ deadpool = "0.12.2"
 tracing = "0.1.41"
 itertools = "0.14.0"
 streamies = "0.2.2"
+bon = "3.6.5"
 
 [dev-dependencies]
 tokio = { version = "1.46.1", features = ["full"] }
