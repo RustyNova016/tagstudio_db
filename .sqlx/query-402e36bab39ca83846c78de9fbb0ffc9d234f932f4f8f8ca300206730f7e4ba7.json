@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO `tag_aliases` VALUES (NULL, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "402e36bab39ca83846c78de9fbb0ffc9d234f932f4f8f8ca300206730f7e4ba7"
+}

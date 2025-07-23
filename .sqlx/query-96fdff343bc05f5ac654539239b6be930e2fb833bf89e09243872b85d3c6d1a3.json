@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT `tags`.* \n            FROM `entries` \n                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`\n                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`\n            WHERE\n                `entries`.`id` = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "shorthand",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_namespace",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_slug",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_category",
+        "ordinal": 5,
+        "type_info": "Bool"
+      },
+      {
+        "name": "icon",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "disambiguation_id",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "96fdff343bc05f5ac654539239b6be930e2fb833bf89e09243872b85d3c6d1a3"
+}

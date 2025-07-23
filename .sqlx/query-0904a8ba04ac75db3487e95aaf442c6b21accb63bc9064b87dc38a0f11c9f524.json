@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE `tags` SET name = $name WHERE id = $id",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "0904a8ba04ac75db3487e95aaf442c6b21accb63bc9064b87dc38a0f11c9f524"
+}

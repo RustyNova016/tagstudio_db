@@ -1,0 +1,38 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "master", "main", "develop"]
+  pull_request:
+    branches: [ "master", "main", "develop" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+  RUST_BACKTRACE: 1
+
+jobs:
+  tests:
+    env: 
+      SQLX_OFFLINE: true
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup toolchain install stable --profile minimal --no-self-update
+
+      - uses: Swatinem/rust-cache@v2
+        with: 
+          key: "(${{ matrix.os }})"
+
+      - uses: taiki-e/install-action@cargo-hack
+        
+      - name: Run tests
+        run: cargo hack test --all-features --ignore-private

@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT `text_fields`.* \n            FROM `entries` \n                INNER JOIN `text_fields` ON `text_fields`.`entry_id` = `entries`.`id`\n            WHERE\n                `entries`.`id` = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "value",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "type_key",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "entry_id",
+        "ordinal": 3,
+        "type_info": "Integer"
+      },
+      {
+        "name": "position",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "2998d35c72fb80b75498b23fd62ef46086c77a052e60b8cff5994297ed51dc34"
+}

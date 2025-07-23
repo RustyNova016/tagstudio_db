@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM `tag_aliases` WHERE `tag_id` = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "26ab990cc0f74df29660dd309c27c6dba97563b41fed653ff5aa95fcba7ffa0f"
+}
