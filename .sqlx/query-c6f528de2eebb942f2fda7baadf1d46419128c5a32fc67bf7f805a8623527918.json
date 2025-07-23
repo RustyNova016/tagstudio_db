@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT `tag_aliases`.* \n            FROM `tags` \n                INNER JOIN `tag_aliases` ON `tag_aliases`.`tag_id` = `tags`.`id`\n            WHERE `tags`.`id` = $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "tag_id",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "c6f528de2eebb942f2fda7baadf1d46419128c5a32fc67bf7f805a8623527918"
+}

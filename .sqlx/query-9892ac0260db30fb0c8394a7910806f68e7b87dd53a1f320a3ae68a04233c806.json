@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT OR IGNORE INTO `tag_parents`(parent_id, child_id) VALUES (?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "9892ac0260db30fb0c8394a7910806f68e7b87dd53a1f320a3ae68a04233c806"
+}

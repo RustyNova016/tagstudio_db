@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT * FROM `entries`",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "folder_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "path",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "filename",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "suffix",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "date_created",
+        "ordinal": 5,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "date_modified",
+        "ordinal": 6,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "date_added",
+        "ordinal": 7,
+        "type_info": "Datetime"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "59b8521c807c56443ef07a060280808f28a41d658eb187ffa5945f2309dc7a03"
+}

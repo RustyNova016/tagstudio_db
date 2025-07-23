@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO `tags` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "shorthand",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_namespace",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_slug",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_category",
+        "ordinal": 5,
+        "type_info": "Bool"
+      },
+      {
+        "name": "icon",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "disambiguation_id",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "f6ff30264581ff83167d6fb6e396c862ed8cb57c99c9d2b8a260bfc550396fa4"
+}

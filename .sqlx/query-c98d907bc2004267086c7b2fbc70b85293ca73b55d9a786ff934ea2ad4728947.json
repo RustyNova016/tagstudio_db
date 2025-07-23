@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO `text_fields` VALUES (?, NULL, ?, ?, 0)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "c98d907bc2004267086c7b2fbc70b85293ca73b55d9a786ff934ea2ad4728947"
+}

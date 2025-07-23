@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE `entries` SET `path` = ? WHERE `id` = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "4f2e1ebb94fe8fc45aca8af1b1de1b3fa8e5928512e09f7fd7f0b5a9642e09f3"
+}

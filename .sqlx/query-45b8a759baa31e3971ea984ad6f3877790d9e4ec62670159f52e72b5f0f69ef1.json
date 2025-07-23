@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT `tags`.* \n            FROM `tags` \n                INNER JOIN `tag_parents` ON `tag_parents`.`child_id` = `tags`.`id`\n            WHERE `tag_parents`.`parent_id` = $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "shorthand",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_namespace",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "color_slug",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_category",
+        "ordinal": 5,
+        "type_info": "Bool"
+      },
+      {
+        "name": "icon",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "disambiguation_id",
+        "ordinal": 7,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "45b8a759baa31e3971ea984ad6f3877790d9e4ec62670159f52e72b5f0f69ef1"
+}
