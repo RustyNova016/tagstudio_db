@@ -57,7 +57,7 @@ impl Tag {
         let mut trans = conn.begin().await?;
 
         if !no_aliasing {
-            self.add_alias(&mut *trans, new_name).await?;
+            self.add_alias(&mut trans, new_name).await?;
         }
 
         sqlx::query!(
@@ -82,26 +82,26 @@ impl Tag {
     ) -> Result<(), crate::Error> {
         let mut trans = conn.begin().await?;
 
-        self.add_alias(&mut *trans, &other.name).await?;
-        self.add_alias(&mut *trans, &other.shorthand.clone().unwrap_or_default())
+        self.add_alias(&mut trans, &other.name).await?;
+        self.add_alias(&mut trans, &other.shorthand.clone().unwrap_or_default())
             .await?;
 
-        let aliases = other.get_aliases(&mut *trans).try_collect_vec().await?;
+        let aliases = other.get_aliases(&mut trans).try_collect_vec().await?;
         for alias in aliases {
-            self.add_alias(&mut *trans, &alias.name).await?;
+            self.add_alias(&mut trans, &alias.name).await?;
         }
 
-        let parents = other.get_parents(&mut *trans).try_collect_vec().await?;
+        let parents = other.get_parents(&mut trans).try_collect_vec().await?;
         for parent in parents {
-            self.add_parent(&mut *trans, parent.id).await?;
+            self.add_parent(&mut trans, parent.id).await?;
         }
 
-        let children = other.get_children(&mut *trans).try_collect_vec().await?;
+        let children = other.get_children(&mut trans).try_collect_vec().await?;
         for child in children {
-            self.add_child(&mut *trans, child.id).await?;
+            self.add_child(&mut trans, child.id).await?;
         }
 
-        other.delete(&mut *trans).await?;
+        other.delete(&mut trans).await?;
 
         trans.commit().await?;
         Ok(())

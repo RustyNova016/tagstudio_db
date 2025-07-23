@@ -8,9 +8,9 @@ pub struct TagEq {
 }
 
 impl TagEq {
-    pub fn get_subquery(&self, id: &str) -> String {
+    pub fn get_subquery(&self, bind_id: u64) -> String {
         format!(
-            "ChildTags_{id} AS (
+    "ChildTags_{bind_id} AS (
     -- Select the actual tag we have asked for
     SELECT
         `tags`.`id` AS child_id
@@ -18,12 +18,12 @@ impl TagEq {
         `tags`
         LEFT JOIN `tag_aliases` ON `tags`.`id` = `tag_aliases`.`tag_id`
     WHERE
-        LOWER(`tags`.`name`) = LOWER($tag_name_{id}) OR -- Try finding by name
-        LOWER(`tags`.`name`) = replace(LOWER($tag_name_{id}), '_', ' ') OR -- Try finding by name escaped
-        LOWER(`tags`.`shorthand`) = LOWER($tag_name_{id}) OR -- Try finding by shorthand
-        LOWER(`tags`.`shorthand`) = replace(LOWER($tag_name_{id}), '_', ' ') OR -- Try finding by shorthand escaped
-        LOWER(`tag_aliases`.`name`) = LOWER($tag_name_{id}) OR -- Try finding by aliased name
-        LOWER(`tag_aliases`.`name`) = replace(LOWER($tag_name_{id}), '_', ' ') -- Try finding by aliased name escaped
+        LOWER(`tags`.`name`) = LOWER(${bind_id}) OR -- Try finding by name
+        LOWER(`tags`.`name`) = replace(LOWER(${bind_id}), '_', ' ') OR -- Try finding by name escaped
+        LOWER(`tags`.`shorthand`) = LOWER(${bind_id}) OR -- Try finding by shorthand
+        LOWER(`tags`.`shorthand`) = replace(LOWER(${bind_id}), '_', ' ') OR -- Try finding by shorthand escaped
+        LOWER(`tag_aliases`.`name`) = LOWER(${bind_id}) OR -- Try finding by aliased name
+        LOWER(`tag_aliases`.`name`) = replace(LOWER(${bind_id}), '_', ' ') -- Try finding by aliased name escaped
     UNION
     -- Recursive Select the parents
     -- (child_id and parent_id are reversed)
@@ -31,17 +31,17 @@ impl TagEq {
         tp.parent_id AS child_id
     FROM
         tag_parents tp
-        INNER JOIN ChildTags_{id} c ON tp.child_id = c.child_id
+        INNER JOIN ChildTags_{bind_id} c ON tp.child_id = c.child_id
 )"
         )
     }
 
-    pub fn get_where_condition(&self, id: &str) -> String {
+    pub fn get_where_condition(&self, bind_id: u64) -> String {
         format!(
             "`entries`.`id` IN (
             SELECT `entry_id` 
-            FROM `ChildTags_{id}`
-                INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{id}`.`child_id`
+            FROM `ChildTags_{bind_id}`
+                INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{bind_id}`.`child_id`
         )"
         )
     }
@@ -62,5 +62,29 @@ impl<T: Display> From<T> for TagEq {
 impl From<TagEq> for Queryfragments {
     fn from(value: TagEq) -> Self {
         Queryfragments::Eq(value)
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use crate::query::Queryfragments;
+    use crate::query::tag_eq::TagEq;
+    use crate::tests::fixtures::test_data::get_test_library;
+
+    #[tokio::test]
+    pub async fn tag_eq_test() {
+        let lib = get_test_library().await;
+
+        let result = Queryfragments::from(TagEq::from("cat"))
+            .fetch_all(&mut lib.db.get().await.unwrap())
+            .await
+            .unwrap();
+        assert_eq!(result.len(), 2);
+
+        let result = Queryfragments::from(TagEq::from("meme"))
+            .fetch_all(&mut lib.db.get().await.unwrap())
+            .await
+            .unwrap();
+        assert_eq!(result.len(), 3);
     }
 }

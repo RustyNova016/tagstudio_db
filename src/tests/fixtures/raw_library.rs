@@ -11,7 +11,7 @@ pub async fn get_empty_library() -> Library {
     lib
 }
 
-pub const DB9_SCHEMA: &'static str = r#"
+pub const DB9_SCHEMA: &str = r#"
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE namespaces (

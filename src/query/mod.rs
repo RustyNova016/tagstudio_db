@@ -18,17 +18,17 @@ pub enum Queryfragments {
 }
 
 impl Queryfragments {
-    pub fn get_subquery(&self, id: &str) -> String {
+    pub fn get_subquery(&self, bind_id: &mut u64) -> String {
         match self {
-            Self::Eq(val) => val.get_subquery(id),
-            Self::And(val) => val.get_subquery(id),
+            Self::Eq(val) => val.get_subquery(*bind_id),
+            Self::And(val) => val.get_subquery(bind_id),
         }
     }
 
-    pub fn get_where_condition(&self, id: &str) -> String {
+    pub fn get_where_condition(&self, bind_id: &mut u64) -> String {
         match self {
-            Self::Eq(val) => val.get_where_condition(id),
-            Self::And(val) => val.get_where_condition(id),
+            Self::Eq(val) => val.get_where_condition(*bind_id),
+            Self::And(val) => val.get_where_condition(bind_id),
         }
     }
 
@@ -42,41 +42,37 @@ impl Queryfragments {
     pub fn as_sql(&self) -> String {
         let mut query = String::new();
 
-        let subqueries = self.get_subquery("");
+        let subqueries = self.get_subquery(&mut 1);
 
         if !subqueries.is_empty() {
             writeln!(query, "WITH RECURSIVE {subqueries}").unwrap();
         }
 
-        let where_condition = self.get_where_condition("");
-
-        format!(
-            "WITH RECURSIVE
-                {subqueries}
-            SELECT DISTINCT
+        writeln!(
+            query,
+            "SELECT DISTINCT
                 `entries`.*
             FROM
-                `entries`
-            WHERE
-                {where_condition}"
+                `entries`"
         )
+        .unwrap();
+
+        let where_condition = self.get_where_condition(&mut 1);
+
+        if !where_condition.is_empty() {
+            writeln!(query, "WHERE {where_condition}").unwrap();
+        }
+
+        query
     }
-}
 
-#[cfg(test)]
-pub mod test {
-    use crate::query::Queryfragments;
-    use crate::query::and::TagAnd;
-    use crate::query::tag_eq::TagEq;
-
-    #[test]
-    pub fn test() {
-        let tag_a = TagEq::from("cat");
-        let tag_b = TagEq::from("Mouse");
-        let and = TagAnd(tag_a.into(), tag_b.into());
-
-        let query: Queryfragments = and.into();
-
-        println!("{}", query.as_sql())
+    pub async fn fetch_all(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<Vec<Entry>, sqlx::Error> {
+        let sql = self.as_sql();
+        eprintln!("{sql}");
+        let query = sqlx::query_as(&sql);
+        self.bind(query).fetch_all(conn).await
     }
 }
