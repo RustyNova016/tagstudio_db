@@ -6,33 +6,31 @@ use crate::query::SQLQuery;
 pub struct TagAnd(pub Queryfragments, pub Queryfragments);
 
 impl TagAnd {
-    pub fn get_subquery(&self, bind_id: &mut u64) -> String {
+    pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
         let q_a = self.0.get_subquery(bind_id);
         bind_id.add_assign(1);
         let q_b = self.1.get_subquery(bind_id);
         bind_id.add_assign(1);
 
-        if !q_a.is_empty() && !q_b.is_empty() {
-            format!("{q_a}, {q_b}")
-        } else if (q_a.is_empty() && q_b.is_empty()) || !q_a.is_empty() {
-            q_a
-        } else {
-            q_b
+        match (q_a, q_b) {
+            (Some(a), Some(b)) => Some(format!("{a}, {b}")),
+            (Some(a), None) => Some(a),
+            (None, Some(b)) => Some(b),
+            (None, None) => None,
         }
     }
 
-    pub fn get_where_condition(&self, bind_id: &mut u64) -> String {
+    pub fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         let q_a = self.0.get_where_condition(bind_id);
         bind_id.add_assign(1);
         let q_b = self.1.get_where_condition(bind_id);
         bind_id.add_assign(1);
 
-        if !q_a.is_empty() && !q_b.is_empty() {
-            format!("({q_a} AND {q_b})")
-        } else if (q_a.is_empty() && q_b.is_empty()) || !q_a.is_empty() {
-            q_a
-        } else {
-            q_b
+        match (q_a, q_b) {
+            (Some(a), Some(b)) => Some(format!("({a} AND {b})")),
+            (Some(a), None) => Some(a),
+            (None, Some(b)) => Some(b),
+            (None, None) => None,
         }
     }
 

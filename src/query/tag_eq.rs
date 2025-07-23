@@ -8,42 +8,42 @@ pub struct TagEq {
 }
 
 impl TagEq {
-    pub fn get_subquery(&self, bind_id: u64) -> String {
-        format!(
-    "ChildTags_{bind_id} AS (
-    -- Select the actual tag we have asked for
-    SELECT
-        `tags`.`id` AS child_id
-    FROM
-        `tags`
-        LEFT JOIN `tag_aliases` ON `tags`.`id` = `tag_aliases`.`tag_id`
-    WHERE
-        LOWER(`tags`.`name`) = LOWER(${bind_id}) OR -- Try finding by name
-        LOWER(`tags`.`name`) = replace(LOWER(${bind_id}), '_', ' ') OR -- Try finding by name escaped
-        LOWER(`tags`.`shorthand`) = LOWER(${bind_id}) OR -- Try finding by shorthand
-        LOWER(`tags`.`shorthand`) = replace(LOWER(${bind_id}), '_', ' ') OR -- Try finding by shorthand escaped
-        LOWER(`tag_aliases`.`name`) = LOWER(${bind_id}) OR -- Try finding by aliased name
-        LOWER(`tag_aliases`.`name`) = replace(LOWER(${bind_id}), '_', ' ') -- Try finding by aliased name escaped
-    UNION
-    -- Recursive Select the parents
-    -- (child_id and parent_id are reversed)
-    SELECT
-        tp.parent_id AS child_id
-    FROM
-        tag_parents tp
-        INNER JOIN ChildTags_{bind_id} c ON tp.child_id = c.child_id
-)"
-        )
+    pub fn get_subquery(&self, bind_id: u64) -> Option<String> {
+        Some(format!(
+            "ChildTags_{bind_id} AS (
+            -- Select the actual tag we have asked for
+            SELECT
+                `tags`.`id` AS child_id
+            FROM
+                `tags`
+                LEFT JOIN `tag_aliases` ON `tags`.`id` = `tag_aliases`.`tag_id`
+            WHERE
+                LOWER(`tags`.`name`) = LOWER(${bind_id}) OR -- Try finding by name
+                LOWER(`tags`.`name`) = replace(LOWER(${bind_id}), '_', ' ') OR -- Try finding by name escaped
+                LOWER(`tags`.`shorthand`) = LOWER(${bind_id}) OR -- Try finding by shorthand
+                LOWER(`tags`.`shorthand`) = replace(LOWER(${bind_id}), '_', ' ') OR -- Try finding by shorthand escaped
+                LOWER(`tag_aliases`.`name`) = LOWER(${bind_id}) OR -- Try finding by aliased name
+                LOWER(`tag_aliases`.`name`) = replace(LOWER(${bind_id}), '_', ' ') -- Try finding by aliased name escaped
+            UNION
+            -- Recursive Select the parents
+            -- (child_id and parent_id are reversed)
+            SELECT
+                tp.parent_id AS child_id
+            FROM
+                tag_parents tp
+                INNER JOIN ChildTags_{bind_id} c ON tp.child_id = c.child_id
+        )"
+                ))
     }
 
-    pub fn get_where_condition(&self, bind_id: u64) -> String {
-        format!(
-            "`entries`.`id` IN (
-            SELECT `entry_id` 
-            FROM `ChildTags_{bind_id}`
-                INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{bind_id}`.`child_id`
-        )"
-        )
+    pub fn get_where_condition(&self, bind_id: u64) -> Option<String> {
+        Some(format!(
+                    "`entries`.`id` IN (
+                    SELECT `entry_id` 
+                    FROM `ChildTags_{bind_id}`
+                        INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{bind_id}`.`child_id`
+                )"
+                ))
     }
 
     pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {

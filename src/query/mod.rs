@@ -18,14 +18,14 @@ pub enum Queryfragments {
 }
 
 impl Queryfragments {
-    pub fn get_subquery(&self, bind_id: &mut u64) -> String {
+    pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
         match self {
             Self::Eq(val) => val.get_subquery(*bind_id),
             Self::And(val) => val.get_subquery(bind_id),
         }
     }
 
-    pub fn get_where_condition(&self, bind_id: &mut u64) -> String {
+    pub fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         match self {
             Self::Eq(val) => val.get_where_condition(*bind_id),
             Self::And(val) => val.get_where_condition(bind_id),
@@ -42,9 +42,7 @@ impl Queryfragments {
     pub fn as_sql(&self) -> String {
         let mut query = String::new();
 
-        let subqueries = self.get_subquery(&mut 1);
-
-        if !subqueries.is_empty() {
+        if let Some(subqueries) = self.get_subquery(&mut 1) {
             writeln!(query, "WITH RECURSIVE {subqueries}").unwrap();
         }
 
@@ -57,9 +55,7 @@ impl Queryfragments {
         )
         .unwrap();
 
-        let where_condition = self.get_where_condition(&mut 1);
-
-        if !where_condition.is_empty() {
+        if let Some(where_condition) = self.get_where_condition(&mut 1) {
             writeln!(query, "WHERE {where_condition}").unwrap();
         }
 
