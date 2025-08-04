@@ -14,14 +14,14 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  dependancies:
+  semver_checks:
     env: 
       SQLX_OFFLINE: true
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
-    - name: Install cargo-machete
-      run: cargo install cargo-machete --locked
-    - name: Run cargo-machete
-      run: cargo machete
+    - name: Install cargo-semver-checks
+      run: cargo install cargo-semver-checks --locked
+    - name: Run cargo-semver-checks
+      run: cargo semver-checks --all-features
