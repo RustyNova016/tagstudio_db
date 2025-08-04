@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: Swatinem/rust-cache@v2
     - name: Install cargo-semver-checks
       run: cargo install cargo-semver-checks --locked
     - name: Run cargo-semver-checks
