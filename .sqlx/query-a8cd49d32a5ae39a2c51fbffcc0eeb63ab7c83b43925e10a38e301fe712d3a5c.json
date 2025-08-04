@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO `entries` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "folder_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "path",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "filename",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "suffix",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "date_created",
+        "ordinal": 5,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "date_modified",
+        "ordinal": 6,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "date_added",
+        "ordinal": 7,
+        "type_info": "Datetime"
+      }
+    ],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "a8cd49d32a5ae39a2c51fbffcc0eeb63ab7c83b43925e10a38e301fe712d3a5c"
+}
