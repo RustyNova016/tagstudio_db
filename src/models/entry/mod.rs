@@ -28,6 +28,27 @@ pub struct Entry {
 }
 
 impl Entry {
+    pub async fn insert(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<Self, crate::Error> {
+        debug!("Adding entry `{}`", self.path);
+
+        Ok(sqlx::query_as!(
+            Self,
+            "INSERT INTO `entries` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
+            self.folder_id,
+            self.path,
+            self.filename,
+            self.suffix,
+            self.date_created,
+            self.date_modified,
+            self.date_added
+        )
+        .fetch_one(conn)
+        .await?)
+    }
+
     /// Get the row by its id
     pub async fn find_by_id(
         conn: &mut sqlx::SqliteConnection,
