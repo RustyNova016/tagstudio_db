@@ -1,8 +1,10 @@
+use core::future::ready;
 use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::NaiveDateTime;
 use futures::Stream;
+use futures::TryStreamExt;
 use sqlx::Acquire;
 use sqlx::FromRow;
 use tracing::debug;
@@ -11,6 +13,7 @@ use crate::models::folder::Folder;
 use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
 use crate::query::Queryfragments;
+use crate::query::eq_tag::EqTag;
 
 #[cfg(feature = "fs")]
 pub mod fs;
@@ -28,10 +31,7 @@ pub struct Entry {
 }
 
 impl Entry {
-    pub async fn insert(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Self, crate::Error> {
+    pub async fn insert(&self, conn: &mut sqlx::SqliteConnection) -> Result<Self, crate::Error> {
         debug!("Adding entry `{}`", self.path);
 
         Ok(sqlx::query_as!(
@@ -80,7 +80,7 @@ impl Entry {
         .await?)
     }
 
-    /// Get the entry by its cannon path
+    /// Get the entry by its cannon path (Aka, the library's root path + the file's path in the library)
     pub async fn find_by_cannon_path(
         conn: &mut sqlx::SqliteConnection,
         path: &Path,
@@ -204,5 +204,21 @@ impl Entry {
         trans.commit().await?;
 
         Ok(())
+    }
+
+    pub async fn has_tag(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        tag: &str,
+    ) -> Result<bool, crate::Error> {
+        let search = Queryfragments::EqTag(EqTag::from(tag));
+        let sql = search.as_sql();
+        let query = sqlx::query_as(&sql);
+        let query = search.bind(query);
+
+        Ok(query
+            .fetch(conn)
+            .try_any(|entry| ready(entry.id == self.id))
+            .await?)
     }
 }
