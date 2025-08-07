@@ -1,4 +1,5 @@
 use core::str::FromStr as _;
+use core::time::Duration;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -22,7 +23,8 @@ impl Library {
 
         let string_lossy = path.to_string_lossy();
         debug!("Openning DB `{}`", string_lossy);
-        let optconn = SqliteConnectOptions::from_str(&string_lossy)?;
+        let optconn =
+            SqliteConnectOptions::from_str(&string_lossy)?.busy_timeout(Duration::from_secs(30));
         let pool = PoolManager::create_pool(optconn);
 
         Ok(Self {
