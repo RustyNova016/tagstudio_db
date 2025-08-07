@@ -73,7 +73,7 @@ impl Library {
         })
     }
 
-    /// Get the [`Folder`](crate::Folder) that is at the root of the directory
+    /// Get the [`Folder`] that is at the root of the directory
     pub async fn get_root_db_folder(
         &self,
         conn: &mut sqlx::SqliteConnection,
