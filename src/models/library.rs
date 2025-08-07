@@ -1,4 +1,5 @@
 use core::str::FromStr as _;
+use core::time::Duration;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -7,6 +8,7 @@ use tracing::debug;
 
 use crate::client::conn_pool::PoolManager;
 use crate::client::conn_pool::TSConnectionPool;
+use crate::models::folder::Folder;
 
 /// A struct representing a TagStudio library.
 pub struct Library {
@@ -21,7 +23,8 @@ impl Library {
 
         let string_lossy = path.to_string_lossy();
         debug!("Openning DB `{}`", string_lossy);
-        let optconn = SqliteConnectOptions::from_str(&string_lossy)?;
+        let optconn =
+            SqliteConnectOptions::from_str(&string_lossy)?.busy_timeout(Duration::from_secs(30));
         let pool = PoolManager::create_pool(optconn);
 
         Ok(Self {
@@ -68,5 +71,17 @@ impl Library {
             path: "".into(),
             db: pool,
         })
+    }
+
+    /// Get the [`Folder`] that is at the root of the directory
+    pub async fn get_root_db_folder(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<Folder, sqlx::Error> {
+        let path = self.path.to_string_lossy();
+        println!("{path}");
+        sqlx::query_as!(Folder, "SELECT * FROM `folders` WHERE path = $1", path)
+            .fetch_one(conn)
+            .await
     }
 }

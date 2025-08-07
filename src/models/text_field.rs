@@ -12,8 +12,8 @@ impl TextField {
     pub async fn insert_text_field(
         conn: &mut sqlx::SqliteConnection,
         entry_id: i64,
-        type_key: String,
-        value: String,
+        type_key: &str,
+        value: &str,
     ) -> Result<(), crate::Error> {
         sqlx::query!(
             "INSERT INTO `text_fields` VALUES (?, NULL, ?, ?, 0)",

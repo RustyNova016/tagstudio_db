@@ -1,8 +1,10 @@
+use core::future::ready;
 use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::NaiveDateTime;
 use futures::Stream;
+use futures::TryStreamExt;
 use sqlx::Acquire;
 use sqlx::FromRow;
 use tracing::debug;
@@ -11,6 +13,7 @@ use crate::models::folder::Folder;
 use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
 use crate::query::Queryfragments;
+use crate::query::eq_tag::EqTag;
 
 #[cfg(feature = "fs")]
 pub mod fs;
@@ -28,6 +31,24 @@ pub struct Entry {
 }
 
 impl Entry {
+    pub async fn insert(&self, conn: &mut sqlx::SqliteConnection) -> Result<Self, crate::Error> {
+        debug!("Adding entry `{}`", self.path);
+
+        Ok(sqlx::query_as!(
+            Self,
+            "INSERT INTO `entries` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
+            self.folder_id,
+            self.path,
+            self.filename,
+            self.suffix,
+            self.date_created,
+            self.date_modified,
+            self.date_added
+        )
+        .fetch_one(conn)
+        .await?)
+    }
+
     /// Get the row by its id
     pub async fn find_by_id(
         conn: &mut sqlx::SqliteConnection,
@@ -43,10 +64,8 @@ impl Entry {
     /// Get the row by its path
     pub async fn find_by_path(
         conn: &mut sqlx::SqliteConnection,
-        path: &Path,
+        path: &str,
     ) -> Result<Vec<Self>, crate::Error> {
-        let path = path.to_string_lossy();
-
         Ok(sqlx::query_as!(
             Self,
             "
@@ -59,7 +78,7 @@ impl Entry {
         .await?)
     }
 
-    /// Get the entry by its cannon path
+    /// Get the entry by its cannon path (Aka, the library's root path + the file's path in the library)
     pub async fn find_by_cannon_path(
         conn: &mut sqlx::SqliteConnection,
         path: &Path,
@@ -72,8 +91,8 @@ impl Entry {
                     FROM `entries`
                         INNER JOIN `folders` ON `folders`.id = `entries`.`folder_id`
                     WHERE
-                        `folders`.`path` + '/' + `entries`.`path` = :target_path OR -- UNIX
-                        `folders`.`path` + '\\' + `entries`.`path` = :target_path   -- Windows
+                        `folders`.`path` + '/' + `entries`.`path` = $1 OR -- UNIX
+                        `folders`.`path` + '\\' + `entries`.`path` = $1   -- Windows
                     ",
             path_string
         )
@@ -183,5 +202,30 @@ impl Entry {
         trans.commit().await?;
 
         Ok(())
+    }
+
+    pub async fn has_tag(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        tag: &str,
+    ) -> Result<bool, crate::Error> {
+        let search = Queryfragments::EqTag(EqTag::from(tag));
+        let sql = search.as_sql();
+        let query = sqlx::query_as(&sql);
+        let query = search.bind(query);
+
+        Ok(query
+            .fetch(conn)
+            .try_any(|entry| ready(entry.id == self.id))
+            .await?)
+    }
+
+    pub async fn add_text_field(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        type_key: &str,
+        value: &str,
+    ) -> Result<(), crate::Error> {
+        TextField::insert_text_field(conn, self.id, type_key, value).await
     }
 }

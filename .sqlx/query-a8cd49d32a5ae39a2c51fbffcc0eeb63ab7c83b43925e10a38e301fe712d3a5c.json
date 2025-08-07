@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT `entries`.*\n                    FROM `entries`\n                        INNER JOIN `folders` ON `folders`.id = `entries`.`folder_id`\n                    WHERE\n                        `folders`.`path` + '/' + `entries`.`path` = :target_path OR -- UNIX\n                        `folders`.`path` + '\\' + `entries`.`path` = :target_path   -- Windows\n                    ",
+  "query": "INSERT INTO `entries` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
   "describe": {
     "columns": [
       {
@@ -45,7 +45,7 @@
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 7
     },
     "nullable": [
       false,
@@ -58,5 +58,5 @@
       true
     ]
   },
-  "hash": "6b343bdf229d8b6808f97584040d01365f2ef4a0238dd23a0a427e62e5e26562"
+  "hash": "a8cd49d32a5ae39a2c51fbffcc0eeb63ab7c83b43925e10a38e301fe712d3a5c"
 }

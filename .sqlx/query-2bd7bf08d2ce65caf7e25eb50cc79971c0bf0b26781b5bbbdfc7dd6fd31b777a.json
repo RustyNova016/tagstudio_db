@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT `entries`.*\n                    FROM `entries`\n                        INNER JOIN `folders` ON `folders`.id = `entries`.`folder_id`\n                    WHERE\n                        `folders`.`path` + '/' + `entries`.`path` = $1 OR -- UNIX\n                        `folders`.`path` + '\\' + `entries`.`path` = $1   -- Windows\n                    ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "folder_id",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "path",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "filename",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "suffix",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "date_created",
+        "ordinal": 5,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "date_modified",
+        "ordinal": 6,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "date_added",
+        "ordinal": 7,
+        "type_info": "Datetime"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "2bd7bf08d2ce65caf7e25eb50cc79971c0bf0b26781b5bbbdfc7dd6fd31b777a"
+}
