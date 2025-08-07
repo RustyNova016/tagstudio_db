@@ -64,10 +64,8 @@ impl Entry {
     /// Get the row by its path
     pub async fn find_by_path(
         conn: &mut sqlx::SqliteConnection,
-        path: &Path,
+        path: &str,
     ) -> Result<Vec<Self>, crate::Error> {
-        let path = path.to_string_lossy();
-
         Ok(sqlx::query_as!(
             Self,
             "
@@ -93,8 +91,8 @@ impl Entry {
                     FROM `entries`
                         INNER JOIN `folders` ON `folders`.id = `entries`.`folder_id`
                     WHERE
-                        `folders`.`path` + '/' + `entries`.`path` = :target_path OR -- UNIX
-                        `folders`.`path` + '\\' + `entries`.`path` = :target_path   -- Windows
+                        `folders`.`path` + '/' + `entries`.`path` = $1 OR -- UNIX
+                        `folders`.`path` + '\\' + `entries`.`path` = $1   -- Windows
                     ",
             path_string
         )
@@ -220,5 +218,14 @@ impl Entry {
             .fetch(conn)
             .try_any(|entry| ready(entry.id == self.id))
             .await?)
+    }
+
+    pub async fn add_text_field(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        type_key: &str,
+        value: &str,
+    ) -> Result<(), crate::Error> {
+        TextField::insert_text_field(conn, self.id, type_key, value).await
     }
 }
