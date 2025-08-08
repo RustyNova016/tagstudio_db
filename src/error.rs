@@ -1,4 +1,5 @@
 use std::io;
+use std::path::PathBuf;
 
 use thiserror::Error;
 
@@ -7,7 +8,7 @@ pub enum Error {
     #[error("Couldn't find the library")]
     LibraryNotFound,
 
-    #[error("The path given isn't part of the folder")]
+    #[error("Tried to move the entry to a path outside of the entry's folder")]
     PathNotInFolder,
 
     #[error(transparent)]
@@ -15,4 +16,10 @@ pub enum Error {
 
     #[error(transparent)]
     IO(#[from] io::Error),
+
+    #[error("Source file {0} is missing on disk")]
+    MissingSourceFile(String),
+
+    #[error("Couldn't move file due to another file already being present at `{0}`")]
+    DestinationOccupied(PathBuf)
 }
