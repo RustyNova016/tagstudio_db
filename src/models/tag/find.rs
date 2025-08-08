@@ -27,7 +27,7 @@ impl Tag {
         )
     }
 
-    /// Get a tag by it's name, shorthand, or alias
+    /// Get all the tags that match a string. This means any tag that have the same name, shorthand, or alias
     pub async fn find_tag_by_name(
         conn: &mut sqlx::SqliteConnection,
         name: &str,

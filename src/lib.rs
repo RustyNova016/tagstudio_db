@@ -1,3 +1,4 @@
+pub mod datastructures;
 pub mod client;
 pub mod error;
 pub mod models;

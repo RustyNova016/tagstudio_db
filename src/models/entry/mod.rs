@@ -1,9 +1,10 @@
+pub mod tags;
+pub mod reads;
 use core::future::ready;
 use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::NaiveDateTime;
-use futures::Stream;
 use futures::TryStreamExt;
 use sqlx::Acquire;
 use sqlx::FromRow;
@@ -100,6 +101,8 @@ impl Entry {
         .await?)
     }
 
+
+
     pub async fn search<'a>(
         conn: &'a mut sqlx::SqliteConnection,
         search: &'a Queryfragments,
@@ -110,20 +113,14 @@ impl Entry {
         Ok(query.fetch_all(conn).await?)
     }
 
-    pub fn stream_entries(
-        conn: &mut sqlx::SqliteConnection,
-    ) -> std::pin::Pin<Box<dyn Stream<Item = Result<Entry, sqlx::Error>> + Send + '_>> {
-        sqlx::query_as!(Self, "SELECT * FROM `entries`").fetch(conn)
-    }
-
     pub async fn get_folder(
         &self,
         conn: &mut sqlx::SqliteConnection,
     ) -> Result<Folder, crate::Error> {
-        Folder::find_by_id(conn, self.id)
+        Folder::find_by_id(conn, self.folder_id)
             .await
             .transpose()
-            .expect("Couldn't find entry's folder")
+            .expect(&format!("Couldn't find entry's folder! Something went horribly wrong, as every entries should have their own folder. Tried to get folder id: {}", self.id))
     }
 
     /// Get the path of the file on the filesystem
@@ -154,23 +151,7 @@ impl Entry {
         .await?)
     }
 
-    pub async fn get_tags(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Vec<Tag>, crate::Error> {
-        Ok(sqlx::query_as!(
-            Tag,
-            "SELECT `tags`.* 
-            FROM `entries` 
-                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`
-                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`
-            WHERE
-                `entries`.`id` = ?",
-            self.id
-        )
-        .fetch_all(conn)
-        .await?)
-    }
+
 
     pub async fn add_tag(
         &self,
