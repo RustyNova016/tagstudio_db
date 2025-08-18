@@ -12,7 +12,7 @@ repository = "https://github.com/RustyNova016/tagstudio_db"
 [dependencies]
 sqlx = { version = "0.8.6", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
 futures = "0.3.31"
-thiserror = "2.0.12"
+thiserror = "2.0.15"
 chrono = "0.4.41"
 deadpool = "0.12.2"
 tracing = "0.1.41"
