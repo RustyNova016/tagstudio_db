@@ -3,7 +3,7 @@ use crate::models::library::Library;
 pub async fn get_empty_library() -> Library {
     let lib = Library::in_memory().unwrap();
 
-    sqlx::query(DB9_SCHEMA)
+    sqlx::query(DB101_SCHEMA)
         .execute(&mut *lib.db.get().await.unwrap())
         .await
         .unwrap();
@@ -11,7 +11,7 @@ pub async fn get_empty_library() -> Library {
     lib
 }
 
-pub const DB9_SCHEMA: &str = r#"
+pub const DB101_SCHEMA: &str = r#"
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE namespaces (
@@ -72,10 +72,6 @@ CREATE TABLE preferences (
 	value JSON NOT NULL, 
 	PRIMARY KEY ("key")
 );
-INSERT INTO preferences VALUES('IS_EXCLUDE_LIST','true');
-INSERT INTO preferences VALUES('EXTENSION_LIST','[".json", ".xmp", ".aae"]');
-INSERT INTO preferences VALUES('PAGE_SIZE',500);
-INSERT INTO preferences VALUES('DB_VERSION',9);
 CREATE TABLE tag_colors (
 	slug VARCHAR NOT NULL, 
 	namespace VARCHAR NOT NULL, 
@@ -201,9 +197,6 @@ CREATE TABLE tags (
 	disambiguation_id INTEGER, 
 	FOREIGN KEY(color_namespace, color_slug) REFERENCES tag_colors (namespace, slug)
 );
-INSERT INTO tags VALUES(0,'Archived',NULL,'tagstudio-standard','red',0,NULL,NULL);
-INSERT INTO tags VALUES(1,'Favorite',NULL,'tagstudio-standard','yellow',0,NULL,NULL);
-INSERT INTO tags VALUES(2,'Meta Tags',NULL,NULL,NULL,1,NULL,NULL);
 CREATE TABLE tag_parents (
 	parent_id INTEGER NOT NULL, 
 	child_id INTEGER NOT NULL, 
@@ -211,8 +204,6 @@ CREATE TABLE tag_parents (
 	FOREIGN KEY(parent_id) REFERENCES tags (id), 
 	FOREIGN KEY(child_id) REFERENCES tags (id)
 );
-INSERT INTO tag_parents VALUES(1,2);
-INSERT INTO tag_parents VALUES(0,2);
 CREATE TABLE tag_entries (
 	tag_id INTEGER NOT NULL, 
 	entry_id INTEGER NOT NULL, 
@@ -227,12 +218,11 @@ CREATE TABLE tag_aliases (
 	PRIMARY KEY (id), 
 	FOREIGN KEY(tag_id) REFERENCES tags (id)
 );
-INSERT INTO tag_aliases VALUES(1,'Archive',0);
-INSERT INTO tag_aliases VALUES(2,'Meta',2);
-INSERT INTO tag_aliases VALUES(3,'Meta Tag',2);
-INSERT INTO tag_aliases VALUES(4,'Favorites',1);
-INSERT INTO tag_aliases VALUES(5,'Favorited',1);
-DELETE FROM sqlite_sequence;
-INSERT INTO sqlite_sequence VALUES('tags',999);
+CREATE TABLE versions (
+	"key" VARCHAR NOT NULL, 
+	value INTEGER NOT NULL, 
+	PRIMARY KEY ("key")
+);
+
 COMMIT;
 "#;

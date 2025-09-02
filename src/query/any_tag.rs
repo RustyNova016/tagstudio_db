@@ -23,26 +23,25 @@ impl AnyTag {
             ),
             ChildTags_{id} AS (
             -- Select the actual tag we have asked for
-            SELECT
-                `tags`.`id` AS child_id
-            FROM
-                `tags`
-                LEFT JOIN `tag_aliases` ON `tags`.`id` = `tag_aliases`.`tag_id`
-            WHERE
-                LOWER(`tags`.`name`) IN AnyTags_{id} OR -- Try finding by name
-                LOWER(`tags`.`name`) IN AnyTags_{id}_replaced OR -- Try finding by name escaped
-                LOWER(`tags`.`shorthand`) IN AnyTags_{id} OR -- Try finding by shorthand
-                LOWER(`tags`.`shorthand`) IN AnyTags_{id}_replaced OR -- Try finding by shorthand escaped
-                LOWER(`tag_aliases`.`name`) IN AnyTags_{id} OR -- Try finding by aliased name
-                LOWER(`tag_aliases`.`name`) IN AnyTags_{id}_replaced -- Try finding by aliased name escaped
-            UNION
+                SELECT
+                    `tags`.`id` AS tag_id
+                FROM
+                    `tags`
+                    LEFT JOIN `tag_aliases` ON `tags`.`id` = `tag_aliases`.`tag_id`
+                WHERE
+                    LOWER(`tags`.`name`) IN AnyTags_{id} OR -- Try finding by name
+                    LOWER(`tags`.`name`) IN AnyTags_{id}_replaced OR -- Try finding by name escaped
+                    LOWER(`tags`.`shorthand`) IN AnyTags_{id} OR -- Try finding by shorthand
+                    LOWER(`tags`.`shorthand`) IN AnyTags_{id}_replaced OR -- Try finding by shorthand escaped
+                    LOWER(`tag_aliases`.`name`) IN AnyTags_{id} OR -- Try finding by aliased name
+                    LOWER(`tag_aliases`.`name`) IN AnyTags_{id}_replaced -- Try finding by aliased name escaped
+
+                UNION
+
             -- Recursive Select the parents
-            -- (child_id and parent_id are reversed)
-            SELECT
-                tp.parent_id AS child_id
-            FROM
-                tag_parents tp
-                INNER JOIN ChildTags_{id} c ON tp.child_id = c.child_id
+            SELECT tp.child_id AS tag_id
+            FROM tag_parents tp
+                INNER JOIN ChildTags_{id} c ON tp.parent_id = c.tag_id
         )"
                 ))
     }
@@ -52,9 +51,9 @@ impl AnyTag {
         bind_id.add_assign(1);
         Some(format!(
                     "`entries`.`id` IN (
-                    SELECT `entry_id` 
+                    SELECT `tag_entries`.`entry_id` 
                     FROM `ChildTags_{id}`
-                        INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{id}`.`child_id`
+                        INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{id}`.`tag_id`
                 )"
                 ))
     }

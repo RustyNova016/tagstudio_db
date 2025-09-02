@@ -16,7 +16,7 @@ impl EqTag {
             "ChildTags_{id} AS (
             -- Select the actual tag we have asked for
             SELECT
-                `tags`.`id` AS child_id
+                `tags`.`id` AS tag_id
             FROM
                 `tags`
                 LEFT JOIN `tag_aliases` ON `tags`.`id` = `tag_aliases`.`tag_id`
@@ -27,15 +27,14 @@ impl EqTag {
                 LOWER(`tags`.`shorthand`) = replace(LOWER(${id}), '_', ' ') OR -- Try finding by shorthand escaped
                 LOWER(`tag_aliases`.`name`) = LOWER(${id}) OR -- Try finding by aliased name
                 LOWER(`tag_aliases`.`name`) = replace(LOWER(${id}), '_', ' ') -- Try finding by aliased name escaped
-            UNION
+
+                UNION
+
             -- Recursive Select the parents
-            -- (child_id and parent_id are reversed)
-            SELECT
-                tp.parent_id AS child_id
-            FROM
-                tag_parents tp
-                INNER JOIN ChildTags_{id} c ON tp.child_id = c.child_id
-        )"
+            SELECT tp.child_id AS tag_id
+            FROM tag_parents tp
+                INNER JOIN ChildTags_{id} c ON tp.parent_id = c.tag_id
+            )"
                 ))
     }
 
@@ -46,7 +45,7 @@ impl EqTag {
                     "`entries`.`id` IN (
                     SELECT `entry_id` 
                     FROM `ChildTags_{id}`
-                        INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{id}`.`child_id`
+                        INNER JOIN `tag_entries` ON `tag_entries`.`tag_id` = `ChildTags_{id}`.`tag_id`
                 )"
                 ))
     }
