@@ -1,5 +1,5 @@
-pub mod datastructures;
 pub mod client;
+pub mod datastructures;
 pub mod error;
 pub mod models;
 pub mod query;

@@ -1,5 +1,5 @@
-pub mod tags;
 pub mod reads;
+pub mod tags;
 use core::future::ready;
 use std::path::Path;
 use std::path::PathBuf;
@@ -101,8 +101,6 @@ impl Entry {
         .await?)
     }
 
-
-
     pub async fn search<'a>(
         conn: &'a mut sqlx::SqliteConnection,
         search: &'a Queryfragments,
@@ -120,7 +118,7 @@ impl Entry {
         Folder::find_by_id(conn, self.folder_id)
             .await
             .transpose()
-            .expect(&format!("Couldn't find entry's folder! Something went horribly wrong, as every entries should have their own folder. Tried to get folder id: {}", self.id))
+            .unwrap_or_else(|| panic!("Couldn't find entry's folder! Something went horribly wrong, as every entries should have their own folder. Tried to get folder id: {}", self.id))
     }
 
     /// Get the path of the file on the filesystem
@@ -150,8 +148,6 @@ impl Entry {
         .fetch_all(conn)
         .await?)
     }
-
-
 
     pub async fn add_tag(
         &self,

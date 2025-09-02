@@ -83,6 +83,4 @@ impl Library {
             .fetch_one(conn)
             .await
     }
-
-    
 }

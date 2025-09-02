@@ -21,5 +21,5 @@ pub enum Error {
     MissingSourceFile(String),
 
     #[error("Couldn't move file due to another file already being present at `{0}`")]
-    DestinationOccupied(PathBuf)
+    DestinationOccupied(PathBuf),
 }

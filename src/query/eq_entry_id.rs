@@ -37,8 +37,8 @@ impl From<EqEntryId> for Queryfragments {
 
 #[cfg(test)]
 pub mod test {
-    use crate::query::eq_entry_id::EqEntryId;
     use crate::query::Queryfragments;
+    use crate::query::eq_entry_id::EqEntryId;
     use crate::tests::fixtures::test_data::get_test_library;
 
     #[tokio::test]
@@ -46,9 +46,9 @@ pub mod test {
         let lib = get_test_library().await;
 
         let result = Queryfragments::from(EqEntryId::new(0))
-        .fetch_all(&mut lib.db.get().await.unwrap())
-        .await
-        .unwrap();
+            .fetch_all(&mut lib.db.get().await.unwrap())
+            .await
+            .unwrap();
         assert_eq!(result.len(), 1);
     }
 }
