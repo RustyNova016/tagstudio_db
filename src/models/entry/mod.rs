@@ -1,3 +1,4 @@
+pub mod tags;
 pub mod reads;
 use core::future::ready;
 use std::path::Path;
@@ -150,23 +151,7 @@ impl Entry {
         .await?)
     }
 
-    pub async fn get_tags(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Vec<Tag>, crate::Error> {
-        Ok(sqlx::query_as!(
-            Tag,
-            "SELECT `tags`.* 
-            FROM `entries` 
-                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`
-                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`
-            WHERE
-                `entries`.`id` = ?",
-            self.id
-        )
-        .fetch_all(conn)
-        .await?)
-    }
+
 
     pub async fn add_tag(
         &self,

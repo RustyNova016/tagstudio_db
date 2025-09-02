@@ -24,7 +24,7 @@ impl Library {
         let string_lossy = path.to_string_lossy();
         debug!("Openning DB `{}`", string_lossy);
         let optconn =
-            SqliteConnectOptions::from_str(&string_lossy)?.busy_timeout(Duration::from_secs(30));
+            SqliteConnectOptions::from_str(&string_lossy)?.busy_timeout(Duration::from_secs(600));
         let pool = PoolManager::create_pool(optconn);
 
         Ok(Self {
@@ -79,7 +79,6 @@ impl Library {
         conn: &mut sqlx::SqliteConnection,
     ) -> Result<Folder, sqlx::Error> {
         let path = self.path.to_string_lossy();
-        println!("{path}");
         sqlx::query_as!(Folder, "SELECT * FROM `folders` WHERE path = $1", path)
             .fetch_one(conn)
             .await
