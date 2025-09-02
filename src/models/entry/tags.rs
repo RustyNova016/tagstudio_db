@@ -1,7 +1,6 @@
 use crate::Entry;
 use crate::Tag;
 use crate::query::Queryfragments;
-use crate::query::any_tag::AnyTag;
 use crate::query::eq_entry_id::EqEntryId;
 use crate::query::eq_tag::EqTag;
 
@@ -38,7 +37,7 @@ impl Entry {
         .await?)
     }
 
-        pub async fn get_tags_and_parents(
+    pub async fn get_tags_and_parents(
         &self,
         conn: &mut sqlx::SqliteConnection,
     ) -> Result<Vec<Tag>, crate::Error> {

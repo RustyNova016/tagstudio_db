@@ -8,9 +8,9 @@ use crate::models::entry::Entry;
 
 impl Entry {
     /// Move the underlying file of the entry somewhere else in the library
-    /// 
+    ///
     /// This takes in a cannonical path to move the file to.
-    /// 
+    ///
     /// If the file isn't found on disk, it ignores it and save the new path in the database
     pub async fn move_file_from_canon_path(
         &mut self,
@@ -20,7 +20,7 @@ impl Entry {
         let folder = self.get_folder(&mut *conn).await?;
 
         if new_lib_path.try_exists()?
-            || !Entry::find_by_cannon_path(conn, &new_lib_path)
+            || !Entry::find_by_cannon_path(conn, new_lib_path)
                 .await?
                 .is_empty()
         {
