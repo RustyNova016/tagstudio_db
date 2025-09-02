@@ -146,8 +146,8 @@ impl Tag {
             "
             SELECT `tags`.* 
             FROM `tags` 
-                INNER JOIN `tag_parents` ON `tag_parents`.`child_id` = `tags`.`id`
-            WHERE `tag_parents`.`parent_id` = $1",
+                INNER JOIN `tag_parents` ON `tag_parents`.`parent_id` = `tags`.`id`
+            WHERE `tag_parents`.`child_id` = $1",
             self.id
         )
         .fetch(conn)
@@ -162,8 +162,8 @@ impl Tag {
             "
             SELECT `tags`.* 
             FROM `tags` 
-                INNER JOIN `tag_parents` ON `tag_parents`.`parent_id` = `tags`.`id`
-            WHERE `tag_parents`.`child_id` = $1",
+                INNER JOIN `tag_parents` ON `tag_parents`.`child_id` = `tags`.`id`
+            WHERE `tag_parents`.`parent_id` = $1",
             self.id
         )
         .fetch(conn)
@@ -197,8 +197,8 @@ impl Tag {
 
         sqlx::query!(
             "INSERT OR IGNORE INTO `tag_parents`(parent_id, child_id) VALUES (?, ?)",
+            parent_id,
             self.id,
-            parent_id
         )
         .execute(conn)
         .await?;
@@ -233,8 +233,8 @@ impl Tag {
 
         sqlx::query!(
             "INSERT OR IGNORE INTO `tag_parents`(parent_id, child_id) VALUES (?, ?)",
-            child_id,
             self.id,
+            child_id,
         )
         .execute(conn)
         .await?;
