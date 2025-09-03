@@ -14,7 +14,7 @@ use crate::models::folder::Folder;
 use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
 use crate::query::Queryfragments;
-use crate::query::eq_tag::EqTag;
+use crate::query::eq_tag::EqTagString;
 
 #[cfg(feature = "fs")]
 pub mod fs;
@@ -186,7 +186,7 @@ impl Entry {
         conn: &mut sqlx::SqliteConnection,
         tag: &str,
     ) -> Result<bool, crate::Error> {
-        let search = Queryfragments::EqTag(EqTag::from(tag));
+        let search = Queryfragments::EqTag(EqTagString::from(tag));
         let sql = search.as_sql();
         let query = sqlx::query_as(&sql);
         let query = search.bind(query);

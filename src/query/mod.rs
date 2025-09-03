@@ -1,32 +1,47 @@
-pub mod eq_entry_id;
+use std::backtrace::Backtrace;
+use std::fmt::Write;
+
+use nom::Finish as _;
+use nom_language::error::convert_error;
+use snafu::Snafu;
 use sqlx::Sqlite;
 use sqlx::query::QueryAs;
 use sqlx::sqlite::SqliteArguments;
 
 use crate::models::entry::Entry;
 use crate::query::and::QueryAnd;
-use crate::query::any_tag::AnyTag;
-use crate::query::eq_entry_id::EqEntryId;
+use crate::query::any_tag_string::AnyTagString;
+use crate::query::eq_any_entry_id::EqAnyEntryId;
 use crate::query::eq_field::EqField;
-use crate::query::eq_tag::EqTag;
+use crate::query::eq_tag::EqTagString;
 use crate::query::not::QueryNot;
-use std::fmt::Write;
+use crate::query::or::QueryOr;
+use crate::query::parsing::expression::parse_expression;
 
 pub mod and;
-pub mod any_tag;
+pub mod any_tag_string;
+pub mod eq_any_entry_id;
 pub mod eq_field;
 pub mod eq_tag;
+//pub mod eq_tag_id;
 pub mod not;
+pub mod or;
+pub mod parsing;
 
 pub type SQLQuery<'q> = QueryAs<'q, Sqlite, Entry, SqliteArguments<'q>>;
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Queryfragments {
     And(Box<QueryAnd>),
-    AnyTag(AnyTag),
-    EqEntryId(EqEntryId),
+    Or(Box<QueryOr>),
+    EqEntryId(EqAnyEntryId),
     EqField(EqField),
-    EqTag(EqTag),
     Not(Box<QueryNot>),
+
+    // --- Tag Eq ---
+    AnyTag(AnyTagString),
+    EqTag(EqTagString),
+    //EqAnyTagId(EqAnyTagId),
 }
 
 impl Queryfragments {
@@ -36,6 +51,7 @@ impl Queryfragments {
             Self::EqField(val) => val.get_subquery(bind_id),
             Self::EqTag(val) => val.get_subquery(bind_id),
             Self::And(val) => val.get_subquery(bind_id),
+            Self::Or(val) => val.get_subquery(bind_id),
             Self::Not(val) => val.get_subquery(bind_id),
             Self::AnyTag(val) => val.get_subquery(bind_id),
         }
@@ -47,6 +63,7 @@ impl Queryfragments {
             Self::EqField(val) => val.get_where_condition(bind_id),
             Self::EqTag(val) => val.get_where_condition(bind_id),
             Self::And(val) => val.get_where_condition(bind_id),
+            Self::Or(val) => val.get_where_condition(bind_id),
             Self::Not(val) => val.get_where_condition(bind_id),
             Self::AnyTag(val) => val.get_where_condition(bind_id),
         }
@@ -58,6 +75,7 @@ impl Queryfragments {
             Self::EqField(val) => val.bind(query),
             Self::EqTag(val) => val.bind(query),
             Self::And(val) => val.bind(query),
+            Self::Or(val) => val.bind(query),
             Self::Not(val) => val.bind(query),
             Self::AnyTag(val) => val.bind(query),
         }
@@ -98,4 +116,21 @@ impl Queryfragments {
     pub fn and(self, other: Self) -> Self {
         QueryAnd(self, other).into()
     }
+
+    pub fn parse(input: &str) -> Result<Self, InvalidSearchString> {
+        parse_expression(input)
+            .finish()
+            .map(|(_, res)| res)
+            .map_err(|err| InvalidSearchString {
+                nom_trace: convert_error(input, err),
+                backtrace: Backtrace::capture(),
+            })
+    }
+}
+
+#[derive(Debug, Snafu)]
+#[snafu(display("Couldn't parse the search query. Search trace: \n{nom_trace}"))]
+pub struct InvalidSearchString {
+    pub nom_trace: String,
+    backtrace: Backtrace,
 }

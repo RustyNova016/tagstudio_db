@@ -2,9 +2,9 @@ use crate::query::Queryfragments;
 use crate::query::SQLQuery;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct QueryAnd(pub Queryfragments, pub Queryfragments);
+pub struct QueryOr(pub Queryfragments, pub Queryfragments);
 
-impl QueryAnd {
+impl QueryOr {
     pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
         let q_a = self.0.get_subquery(bind_id);
         let q_b = self.1.get_subquery(bind_id);
@@ -22,7 +22,7 @@ impl QueryAnd {
         let q_b = self.1.get_where_condition(bind_id);
 
         match (q_a, q_b) {
-            (Some(a), Some(b)) => Some(format!("({a} AND {b})")),
+            (Some(a), Some(b)) => Some(format!("({a} OR {b})")),
             (Some(a), None) => Some(a),
             (None, Some(b)) => Some(b),
             (None, None) => None,
@@ -35,9 +35,9 @@ impl QueryAnd {
     }
 }
 
-impl From<QueryAnd> for Queryfragments {
-    fn from(value: QueryAnd) -> Self {
-        Queryfragments::And(Box::new(value))
+impl From<QueryOr> for Queryfragments {
+    fn from(value: QueryOr) -> Self {
+        Queryfragments::Or(Box::new(value))
     }
 }
 
