@@ -20,9 +20,21 @@ impl QueryNot {
     }
 }
 
+impl From<Queryfragments> for QueryNot {
+    fn from(value: Queryfragments) -> Self {
+        Self(value)
+    }
+}
+
 impl From<QueryNot> for Queryfragments {
     fn from(value: QueryNot) -> Self {
         Queryfragments::Not(Box::new(value))
+    }
+}
+
+impl Queryfragments {
+    pub fn into_not(self) -> Self {
+        QueryNot::from(self).into()
     }
 }
 
