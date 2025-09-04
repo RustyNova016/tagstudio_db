@@ -10,6 +10,7 @@ use sqlx::sqlite::SqliteArguments;
 
 use crate::models::entry::Entry;
 use crate::query::and::QueryAnd;
+use crate::query::any_tag_id::AnyTagId;
 use crate::query::any_tag_string::AnyTagString;
 use crate::query::eq_any_entry_id::EqAnyEntryId;
 use crate::query::eq_field::EqField;
@@ -19,11 +20,11 @@ use crate::query::or::QueryOr;
 use crate::query::parsing::expression::parse_expression;
 
 pub mod and;
+pub mod any_tag_id;
 pub mod any_tag_string;
 pub mod eq_any_entry_id;
 pub mod eq_field;
 pub mod eq_tag;
-//pub mod eq_tag_id;
 pub mod not;
 pub mod or;
 pub mod parsing;
@@ -39,9 +40,9 @@ pub enum Queryfragments {
     Not(Box<QueryNot>),
 
     // --- Tag Eq ---
-    AnyTag(AnyTagString),
+    AnyTagString(AnyTagString),
+    AnyTagId(AnyTagId),
     EqTag(EqTagString),
-    //EqAnyTagId(EqAnyTagId),
 }
 
 impl Queryfragments {
@@ -53,7 +54,8 @@ impl Queryfragments {
             Self::And(val) => val.get_subquery(bind_id),
             Self::Or(val) => val.get_subquery(bind_id),
             Self::Not(val) => val.get_subquery(bind_id),
-            Self::AnyTag(val) => val.get_subquery(bind_id),
+            Self::AnyTagString(val) => val.get_subquery(bind_id),
+            Self::AnyTagId(val) => val.get_subquery(bind_id),
         }
     }
 
@@ -65,7 +67,8 @@ impl Queryfragments {
             Self::And(val) => val.get_where_condition(bind_id),
             Self::Or(val) => val.get_where_condition(bind_id),
             Self::Not(val) => val.get_where_condition(bind_id),
-            Self::AnyTag(val) => val.get_where_condition(bind_id),
+            Self::AnyTagString(val) => val.get_where_condition(bind_id),
+            Self::AnyTagId(val) => val.get_where_condition(bind_id),
         }
     }
 
@@ -77,7 +80,8 @@ impl Queryfragments {
             Self::And(val) => val.bind(query),
             Self::Or(val) => val.bind(query),
             Self::Not(val) => val.bind(query),
-            Self::AnyTag(val) => val.bind(query),
+            Self::AnyTagString(val) => val.bind(query),
+            Self::AnyTagId(val) => val.bind(query),
         }
     }
 

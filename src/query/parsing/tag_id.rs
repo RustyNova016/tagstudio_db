@@ -1,12 +1,17 @@
-use nom::bytes::complete::tag;
 use nom::IResult;
 use nom::Parser as _;
+use nom::bytes::complete::tag;
 use nom::character::complete::i64;
+use nom::error::ContextError;
+use nom::error::ParseError;
 
-use crate::query::eq_tag_id::EqAnyTagId;
+use crate::query::any_tag_id::AnyTagId;
 use crate::query::parsing::sp;
 
-pub(super) fn parse_tag_id(input: &str) -> IResult<&str, EqAnyTagId> {
+pub(super) fn parse_tag_id<'a, E>(input: &'a str) -> IResult<&'a str, AnyTagId, E>
+where
+    E: ParseError<&'a str> + ContextError<&'a str>,
+{
     // Remove spaces
     let (leftover_input, _) = sp(input)?;
     // Grab the leading `tag_id:`
@@ -16,5 +21,5 @@ pub(super) fn parse_tag_id(input: &str) -> IResult<&str, EqAnyTagId> {
     // Grab the id
     let (leftover_input, id) = i64(leftover_input)?;
 
-    Ok((leftover_input, EqAnyTagId::new1(id)))
+    Ok((leftover_input, AnyTagId::new1(id)))
 }

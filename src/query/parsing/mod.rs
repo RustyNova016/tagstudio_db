@@ -13,7 +13,7 @@ pub mod and;
 pub mod expression;
 pub mod not;
 pub mod or;
-//pub mod tag_id;
+pub mod tag_id;
 pub mod tag_string;
 
 /// Parse spaces

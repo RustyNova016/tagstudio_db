@@ -16,6 +16,7 @@ use crate::query::parsing::not::parse_explicit_not;
 use crate::query::parsing::or::parse_explicit_or;
 use crate::query::parsing::sp;
 use crate::query::parsing::sp_arround;
+use crate::query::parsing::tag_id::parse_tag_id;
 use crate::query::parsing::tag_string::parse_tag_string;
 use crate::query::parsing::tag_string::parse_tag_string_escaped;
 
@@ -77,9 +78,9 @@ where
         preceded(
             sp,
             alt((
-                //map(parse_tag_id, Queryfragments::EqAnyTagID),
-                map(parse_tag_string, Queryfragments::AnyTag),
-                map(parse_tag_string_escaped, Queryfragments::AnyTag),
+                map(parse_tag_string, Queryfragments::AnyTagString),
+                map(parse_tag_string_escaped, Queryfragments::AnyTagString),
+                map(parse_tag_id, Queryfragments::AnyTagId),
                 map(parse_explicit_not, Queryfragments::from),
             )),
         ),
