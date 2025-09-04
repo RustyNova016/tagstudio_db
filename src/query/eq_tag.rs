@@ -4,11 +4,12 @@ use core::ops::AddAssign as _;
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
 
-pub struct EqTag {
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct EqTagString {
     tag_name: String,
 }
 
-impl EqTag {
+impl EqTagString {
     pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
         let id = *bind_id;
         bind_id.add_assign(1);
@@ -55,7 +56,7 @@ impl EqTag {
     }
 }
 
-impl<T: Display> From<T> for EqTag {
+impl<T: Display> From<T> for EqTagString {
     fn from(value: T) -> Self {
         Self {
             tag_name: value.to_string(),
@@ -63,8 +64,8 @@ impl<T: Display> From<T> for EqTag {
     }
 }
 
-impl From<EqTag> for Queryfragments {
-    fn from(value: EqTag) -> Self {
+impl From<EqTagString> for Queryfragments {
+    fn from(value: EqTagString) -> Self {
         Queryfragments::EqTag(value)
     }
 }
@@ -72,20 +73,20 @@ impl From<EqTag> for Queryfragments {
 #[cfg(test)]
 pub mod test {
     use crate::query::Queryfragments;
-    use crate::query::eq_tag::EqTag;
+    use crate::query::eq_tag::EqTagString;
     use crate::tests::fixtures::test_data::get_test_library;
 
     #[tokio::test]
     pub async fn tag_eq_test() {
         let lib = get_test_library().await;
 
-        let result = Queryfragments::from(EqTag::from("cat"))
+        let result = Queryfragments::from(EqTagString::from("cat"))
             .fetch_all(&mut lib.db.get().await.unwrap())
             .await
             .unwrap();
         assert_eq!(result.len(), 2);
 
-        let result = Queryfragments::from(EqTag::from("meme"))
+        let result = Queryfragments::from(EqTagString::from("meme"))
             .fetch_all(&mut lib.db.get().await.unwrap())
             .await
             .unwrap();

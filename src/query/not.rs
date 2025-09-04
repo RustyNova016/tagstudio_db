@@ -1,6 +1,7 @@
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct QueryNot(pub Queryfragments);
 
 impl QueryNot {
@@ -28,7 +29,7 @@ impl From<QueryNot> for Queryfragments {
 #[cfg(test)]
 pub mod test {
     use crate::query::Queryfragments;
-    use crate::query::eq_tag::EqTag;
+    use crate::query::eq_tag::EqTagString;
     use crate::query::not::QueryNot;
     use crate::tests::fixtures::test_data::get_test_library;
 
@@ -36,7 +37,7 @@ pub mod test {
     pub async fn query_not_test() {
         let lib = get_test_library().await;
 
-        let result = Queryfragments::from(QueryNot(EqTag::from("Maxwell").into()))
+        let result = Queryfragments::from(QueryNot(EqTagString::from("Maxwell").into()))
             .fetch_all(&mut lib.db.get().await.unwrap())
             .await
             .unwrap();

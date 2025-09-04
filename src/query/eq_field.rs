@@ -3,11 +3,13 @@ use core::ops::AddAssign;
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EqField {
     field_type: String,
     value: FieldValue,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum FieldValue {
     Boolean(bool),
     Datetime(chrono::NaiveDate),

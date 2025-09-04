@@ -1,13 +1,21 @@
+use core::fmt::Display;
 use core::ops::AddAssign as _;
 
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
 
-pub struct AnyTag {
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct AnyTagString {
     tag_name: Vec<String>,
 }
 
-impl AnyTag {
+impl AnyTagString {
+    pub fn new1<T: Display>(value: T) -> Self {
+        Self {
+            tag_name: vec![value.to_string()],
+        }
+    }
+
     pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
         let id = *bind_id;
         bind_id.add_assign(1);
@@ -63,32 +71,35 @@ impl AnyTag {
     }
 }
 
-impl From<Vec<String>> for AnyTag {
+impl From<Vec<String>> for AnyTagString {
     fn from(value: Vec<String>) -> Self {
         Self { tag_name: value }
     }
 }
 
-impl From<AnyTag> for Queryfragments {
-    fn from(value: AnyTag) -> Self {
-        Queryfragments::AnyTag(value)
+impl From<AnyTagString> for Queryfragments {
+    fn from(value: AnyTagString) -> Self {
+        Queryfragments::AnyTagString(value)
     }
 }
 
 #[cfg(test)]
 pub mod test {
     use crate::query::Queryfragments;
-    use crate::query::any_tag::AnyTag;
+    use crate::query::any_tag_string::AnyTagString;
     use crate::tests::fixtures::test_data::get_test_library;
 
     #[tokio::test]
     pub async fn tag_eq_test() {
         let lib = get_test_library().await;
 
-        let result = Queryfragments::from(AnyTag::from(vec!["cat".to_string(), "dog".to_string()]))
-            .fetch_all(&mut lib.db.get().await.unwrap())
-            .await
-            .unwrap();
+        let result = Queryfragments::from(AnyTagString::from(vec![
+            "cat".to_string(),
+            "dog".to_string(),
+        ]))
+        .fetch_all(&mut lib.db.get().await.unwrap())
+        .await
+        .unwrap();
         assert_eq!(result.len(), 3);
     }
 }

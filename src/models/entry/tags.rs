@@ -1,8 +1,8 @@
 use crate::Entry;
 use crate::Tag;
 use crate::query::Queryfragments;
-use crate::query::eq_entry_id::EqEntryId;
-use crate::query::eq_tag::EqTag;
+use crate::query::eq_any_entry_id::EqAnyEntryId;
+use crate::query::eq_tag::EqTagString;
 
 impl Entry {
     /// Return true if the entry has a tag, tag parent or alias that match the input string
@@ -11,7 +11,8 @@ impl Entry {
         conn: &mut sqlx::SqliteConnection,
         tag: &str,
     ) -> Result<bool, crate::Error> {
-        let search = Queryfragments::EqTag(EqTag::from(tag)).and(EqEntryId::new(self.id).into());
+        let search =
+            Queryfragments::EqTag(EqTagString::from(tag)).and(EqAnyEntryId::new1(self.id).into());
         let sql = search.as_sql();
         let query = sqlx::query_as(&sql);
         let query = search.bind(query);
