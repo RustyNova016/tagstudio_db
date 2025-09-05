@@ -1,6 +1,6 @@
-pub mod reads;
-pub mod tags;
 use core::future::ready;
+use core::str::FromStr;
+use std::ffi::OsString;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -15,6 +15,9 @@ use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
 use crate::query::Queryfragments;
 use crate::query::eq_tag::EqTagString;
+
+pub mod reads;
+pub mod tags;
 
 #[cfg(feature = "fs")]
 pub mod fs;
@@ -130,6 +133,18 @@ impl Entry {
         let mut path = PathBuf::from(root_path);
         path.push(&self.path);
         Ok(path)
+    }
+
+    /// Get the relative path of the file
+    pub fn get_relative_path(&self) -> PathBuf {
+        PathBuf::from_str(&self.path).unwrap()
+    }
+
+    /// Get the filename of the file. This is more secured than the inner `filename` field as it takes it from the path
+    pub fn get_filename(&self) -> Option<OsString> {
+        self.get_relative_path()
+            .file_name()
+            .map(|f| f.to_os_string())
     }
 
     pub async fn get_text_fields(

@@ -1,3 +1,5 @@
+pub mod eq_folder;
+
 use std::backtrace::Backtrace;
 use std::fmt::Write;
 
@@ -14,6 +16,7 @@ use crate::query::any_tag_id::AnyTagId;
 use crate::query::any_tag_string::AnyTagString;
 use crate::query::eq_any_entry_id::EqAnyEntryId;
 use crate::query::eq_field::EqField;
+use crate::query::eq_folder::EqEntryFolder;
 use crate::query::eq_tag::EqTagString;
 use crate::query::not::QueryNot;
 use crate::query::or::QueryOr;
@@ -43,6 +46,9 @@ pub enum Queryfragments {
     AnyTagString(AnyTagString),
     AnyTagId(AnyTagId),
     EqTag(EqTagString),
+
+    // --- Entry Eq ---
+    EqEntryFolder(EqEntryFolder),
 }
 
 impl Queryfragments {
@@ -56,6 +62,7 @@ impl Queryfragments {
             Self::Not(val) => val.get_subquery(bind_id),
             Self::AnyTagString(val) => val.get_subquery(bind_id),
             Self::AnyTagId(val) => val.get_subquery(bind_id),
+            Self::EqEntryFolder(val) => val.get_subquery(bind_id),
         }
     }
 
@@ -69,6 +76,7 @@ impl Queryfragments {
             Self::Not(val) => val.get_where_condition(bind_id),
             Self::AnyTagString(val) => val.get_where_condition(bind_id),
             Self::AnyTagId(val) => val.get_where_condition(bind_id),
+            Self::EqEntryFolder(val) => val.get_where_condition(bind_id),
         }
     }
 
@@ -82,6 +90,7 @@ impl Queryfragments {
             Self::Not(val) => val.bind(query),
             Self::AnyTagString(val) => val.bind(query),
             Self::AnyTagId(val) => val.bind(query),
+            Self::EqEntryFolder(val) => val.bind(query),
         }
     }
 

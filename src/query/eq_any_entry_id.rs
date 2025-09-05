@@ -42,6 +42,12 @@ impl From<EqAnyEntryId> for Queryfragments {
     }
 }
 
+impl Queryfragments {
+    pub fn eq_any_entry_id(ids: Vec<i64>) -> Self {
+        EqAnyEntryId::new(ids).into()
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use crate::query::Queryfragments;
