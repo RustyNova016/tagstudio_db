@@ -3,27 +3,30 @@
 repos:
   - repo: local
     hooks:
-    - id: fmt
+    - id: Fmt
       name: fmt
-      description: Format files with cargo fmt.
       entry: cargo fmt
       language: system
       types: [rust]
       args: ["--"]
       pass_filenames: false
+
     - id: Sqlx Prepare
       name: Sqlx Prepare
-      description: Lint rust sources
       entry: cargo sqlx prepare
       language: system
-      args: ["--"]
       types: [rust]
       pass_filenames: false
-    - id: clippy
-      name: clippy
-      description: Lint rust sources
-      entry: cargo hack clippy
+
+    - id: Sqlx Prepare Add files
+      name: Sqlx Prepare Add files
+      entry: git add ./.sqlx
       language: system
-      args: ["--feature-powerset", "--", "-D warnings"]
+      pass_filenames: false
+
+    - id: Clippy
+      name: clippy
+      entry: cargo hack clippy --feature-powerset -- -D warnings
+      language: system
       types: [rust]
       pass_filenames: false

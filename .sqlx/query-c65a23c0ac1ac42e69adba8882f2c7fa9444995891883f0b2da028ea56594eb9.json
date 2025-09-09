@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT VALUE FROM `versions` WHERE `key` = 'CURRENT'",
+  "describe": {
+    "columns": [
+      {
+        "name": "value",
+        "ordinal": 0,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c65a23c0ac1ac42e69adba8882f2c7fa9444995891883f0b2da028ea56594eb9"
+}
