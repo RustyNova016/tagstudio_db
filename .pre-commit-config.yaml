@@ -1,0 +1,29 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: local
+    hooks:
+    - id: fmt
+      name: fmt
+      description: Format files with cargo fmt.
+      entry: cargo fmt
+      language: system
+      types: [rust]
+      args: ["--"]
+      pass_filenames: false
+    - id: Sqlx Prepare
+      name: Sqlx Prepare
+      description: Lint rust sources
+      entry: cargo sqlx prepare
+      language: system
+      args: ["--"]
+      types: [rust]
+      pass_filenames: false
+    - id: clippy
+      name: clippy
+      description: Lint rust sources
+      entry: cargo hack clippy
+      language: system
+      args: ["--feature-powerset", "--", "-D warnings"]
+      types: [rust]
+      pass_filenames: false
