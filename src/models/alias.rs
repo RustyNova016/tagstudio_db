@@ -1,5 +1,6 @@
 use tracing::debug;
 
+/// An alias of a tag
 pub struct TagAlias {
     pub id: i64,
     pub name: String,
