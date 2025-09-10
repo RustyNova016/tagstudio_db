@@ -1503,7 +1503,7 @@ dependencies = [
 
 [[package]]
 name = "tagstudio_db"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "chrono",
  "deadpool",
@@ -1511,7 +1511,6 @@ dependencies = [
  "itertools",
  "nom",
  "nom-language",
- "serde_json",
  "snafu",
  "sqlx",
  "streamies",
