@@ -53,7 +53,7 @@ impl EqField {
         ))
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         let query = query.bind(self.field_type.to_string());
 
         match &self.value {

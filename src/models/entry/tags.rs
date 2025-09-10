@@ -2,7 +2,7 @@ use crate::Entry;
 use crate::Tag;
 use crate::query::Queryfragments;
 use crate::query::eq_any_entry_id::EqAnyEntryId;
-use crate::query::eq_tag::EqTagString;
+use crate::query::eq_tag_string::EqTagString;
 
 impl Entry {
     /// Return true if the entry has a tag, tag parent or alias that match the input string
@@ -15,7 +15,7 @@ impl Entry {
             Queryfragments::EqTag(EqTagString::from(tag)).and(EqAnyEntryId::new1(self.id).into());
         let sql = search.as_sql();
         let query = sqlx::query_as(&sql);
-        let query = search.bind(query);
+        let query = search.bind::<Entry>(query);
 
         Ok(query.fetch_optional(conn).await?.is_some())
     }

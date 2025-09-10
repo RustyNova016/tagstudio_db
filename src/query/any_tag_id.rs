@@ -2,6 +2,7 @@ use core::ops::AddAssign as _;
 
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
+use crate::query::trait_tag_filter::TagFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct AnyTagId {
@@ -55,7 +56,7 @@ impl AnyTagId {
                 ))
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         query.bind(serde_json::to_string(&self.tag_name).unwrap())
     }
 }

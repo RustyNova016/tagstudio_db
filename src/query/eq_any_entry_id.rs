@@ -31,7 +31,7 @@ impl EqAnyEntryId {
         ))
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         query.bind(serde_json::to_string(&self.ids).unwrap())
     }
 }

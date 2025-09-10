@@ -15,7 +15,7 @@ impl QueryNot {
             .map(|cond| format!("(NOT ({cond}))"))
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         self.0.bind(query)
     }
 }
@@ -41,7 +41,7 @@ impl Queryfragments {
 #[cfg(test)]
 pub mod test {
     use crate::query::Queryfragments;
-    use crate::query::eq_tag::EqTagString;
+    use crate::query::eq_tag_string::EqTagString;
     use crate::query::not::QueryNot;
     use crate::tests::fixtures::test_data::get_test_library;
 

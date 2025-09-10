@@ -29,7 +29,7 @@ impl QueryAnd {
         }
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         let query = self.0.bind(query);
         self.1.bind(query)
     }
@@ -45,7 +45,7 @@ impl From<QueryAnd> for Queryfragments {
 pub mod test {
     use crate::query::Queryfragments;
     use crate::query::and::QueryAnd;
-    use crate::query::eq_tag::EqTagString;
+    use crate::query::eq_tag_string::EqTagString;
     use crate::tests::fixtures::test_data::get_test_library;
 
     #[tokio::test]

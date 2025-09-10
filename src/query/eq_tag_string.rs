@@ -51,7 +51,7 @@ impl EqTagString {
                 ))
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         query.bind(self.tag_name.to_string())
     }
 }
@@ -73,7 +73,7 @@ impl From<EqTagString> for Queryfragments {
 #[cfg(test)]
 pub mod test {
     use crate::query::Queryfragments;
-    use crate::query::eq_tag::EqTagString;
+    use crate::query::eq_tag_string::EqTagString;
     use crate::tests::fixtures::test_data::get_test_library;
 
     #[tokio::test]

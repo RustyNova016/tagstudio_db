@@ -14,7 +14,7 @@ use crate::models::folder::Folder;
 use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
 use crate::query::Queryfragments;
-use crate::query::eq_tag::EqTagString;
+use crate::query::eq_tag_string::EqTagString;
 
 pub mod reads;
 pub mod tags;
@@ -208,7 +208,7 @@ impl Entry {
 
         Ok(query
             .fetch(conn)
-            .try_any(|entry| ready(entry.id == self.id))
+            .try_any(|entry: Entry| ready(entry.id == self.id))
             .await?)
     }
 

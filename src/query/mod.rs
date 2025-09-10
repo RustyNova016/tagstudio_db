@@ -1,5 +1,4 @@
-pub mod eq_folder;
-
+pub mod eq_tag_id;
 use std::backtrace::Backtrace;
 use std::fmt::Write;
 
@@ -17,22 +16,31 @@ use crate::query::any_tag_string::AnyTagString;
 use crate::query::eq_any_entry_id::EqAnyEntryId;
 use crate::query::eq_field::EqField;
 use crate::query::eq_folder::EqEntryFolder;
-use crate::query::eq_tag::EqTagString;
+use crate::query::eq_tag_string::EqTagString;
 use crate::query::not::QueryNot;
 use crate::query::or::QueryOr;
 use crate::query::parsing::expression::parse_expression;
 
 pub mod and;
+pub mod and2;
 pub mod any_tag_id;
 pub mod any_tag_string;
+pub mod entries_with_tags;
 pub mod eq_any_entry_id;
 pub mod eq_field;
-pub mod eq_tag;
+pub mod eq_folder;
+pub mod eq_tag_or_parents;
+pub mod eq_tag_string;
+pub mod eq_tag_string2;
 pub mod not;
+pub mod not2;
 pub mod or;
+pub mod or2;
 pub mod parsing;
+pub mod trait_entry_filter;
+pub mod trait_tag_filter;
 
-pub type SQLQuery<'q> = QueryAs<'q, Sqlite, Entry, SqliteArguments<'q>>;
+pub type SQLQuery<'q, O> = QueryAs<'q, Sqlite, O, SqliteArguments<'q>>;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Queryfragments {
@@ -80,7 +88,7 @@ impl Queryfragments {
         }
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         match self {
             Self::EqEntryId(val) => val.bind(query),
             Self::EqField(val) => val.bind(query),

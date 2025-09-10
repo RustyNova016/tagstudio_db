@@ -3,6 +3,7 @@ use core::ops::AddAssign;
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
 
+/// Check if the entry has the same folder as
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EqEntryFolder {
     folder: String,
@@ -27,7 +28,7 @@ impl EqEntryFolder {
         ))
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         query.bind(&self.folder)
     }
 }
