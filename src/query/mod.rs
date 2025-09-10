@@ -1,3 +1,4 @@
+pub mod eq_any_tag_id;
 use sqlx::Sqlite;
 use sqlx::query::QueryAs;
 use sqlx::sqlite::SqliteArguments;
@@ -7,6 +8,7 @@ use crate::query::parsing::expression::parse_expression;
 pub mod and;
 pub mod entries_with_tags;
 pub mod entry_search_query;
+pub mod eq_any_entry_id;
 pub mod eq_entry_field;
 pub mod eq_entry_id;
 pub mod eq_folder;

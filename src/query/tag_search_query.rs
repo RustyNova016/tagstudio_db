@@ -3,6 +3,7 @@ use core::fmt::Display;
 use crate::query::and::QueryAnd;
 use crate::query::entries_with_tags::EntriesWithTags;
 use crate::query::entry_search_query::EntrySearchQuery;
+use crate::query::eq_any_tag_id::EqAnyTagId;
 use crate::query::eq_tag_id::EqTagId;
 use crate::query::eq_tag_or_children::EqTagOrChildren;
 use crate::query::eq_tag_string::EqTagString;
@@ -13,6 +14,7 @@ use crate::query::trait_tag_filter::TagFilter;
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TagSearchQuery {
     EqTagId(EqTagId),
+    EqAnyTagId(EqAnyTagId),
     EqTagString(EqTagString),
 
     EqTagOrChildren(EqTagOrChildren<Box<TagSearchQuery>>),
@@ -26,6 +28,7 @@ impl TagFilter for TagSearchQuery {
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         match self {
             Self::EqTagId(val) => val.get_where_condition(bind_id),
+            Self::EqAnyTagId(val) => val.get_where_condition(bind_id),
             Self::EqTagString(val) => val.get_where_condition(bind_id),
             Self::EqTagOrChildren(val) => val.get_where_condition(bind_id),
             Self::Not(val) => val.get_where_condition(bind_id),
@@ -37,6 +40,7 @@ impl TagFilter for TagSearchQuery {
     fn bind<'q, O>(&'q self, query: super::SQLQuery<'q, O>) -> super::SQLQuery<'q, O> {
         match self {
             Self::EqTagId(val) => val.bind(query),
+            Self::EqAnyTagId(val) => val.bind(query),
             Self::EqTagString(val) => val.bind(query),
             Self::EqTagOrChildren(val) => val.bind(query),
             Self::Not(val) => val.bind(query),
