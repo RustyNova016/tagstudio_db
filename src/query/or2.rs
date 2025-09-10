@@ -65,3 +65,24 @@ where
         ))
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use crate::query::eq_tag_or_children::EqTagOrChildren;
+    use crate::query::eq_tag_string2::EqTagString2;
+    use crate::query::or2::QueryOr2;
+    use crate::query::trait_tag_filter::TagFilter;
+    use crate::tests::fixtures::assertions::assert_eq_entries;
+
+    #[tokio::test]
+    pub async fn tag_or_test() {
+        assert_eq_entries(
+            QueryOr2(
+                EqTagOrChildren(EqTagString2::from("maxwell")).into_entry_filter(),
+                EqTagOrChildren(EqTagString2::from("doge")).into_entry_filter(),
+            ),
+            vec![0, 1, 2],
+        )
+        .await;
+    }
+}
