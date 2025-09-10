@@ -1,6 +1,7 @@
 use core::ops::AddAssign as _;
 
 use crate::query::SQLQuery;
+use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::trait_tag_filter::TagFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -16,5 +17,11 @@ impl TagFilter for EqTagId {
 
     fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         query.bind(&self.0)
+    }
+}
+
+impl From<EqTagId> for TagSearchQuery {
+    fn from(value: EqTagId) -> Self {
+        TagSearchQuery::EqTagId(value)
     }
 }

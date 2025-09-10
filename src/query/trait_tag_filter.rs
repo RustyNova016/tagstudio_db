@@ -1,6 +1,9 @@
+use core::ops::Deref;
+
 use crate::Tag;
 use crate::query::SQLQuery;
 use crate::query::entries_with_tags::EntriesWithTags;
+use crate::query::eq_tag_or_children::EqTagOrChildren;
 
 /// Trait for all the querry fragments that can generate `WHERE` filter for a `SELECT` on the `tags` table
 pub trait TagFilter {
@@ -29,5 +32,25 @@ pub trait TagFilter {
         Self: Sized,
     {
         EntriesWithTags(self)
+    }
+
+    fn add_children_tags(self) -> EqTagOrChildren<Self>
+    where
+        Self: Sized,
+    {
+        EqTagOrChildren(self)
+    }
+}
+
+impl<T> TagFilter for Box<T>
+where
+    T: TagFilter,
+{
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
+        self.deref().bind(query)
+    }
+
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+        self.deref().get_where_condition(bind_id)
     }
 }

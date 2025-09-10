@@ -1,4 +1,6 @@
+pub mod entry_search_query;
 pub mod eq_tag_id;
+pub mod tag_search_query;
 use std::backtrace::Backtrace;
 use std::fmt::Write;
 
@@ -29,7 +31,7 @@ pub mod entries_with_tags;
 pub mod eq_any_entry_id;
 pub mod eq_field;
 pub mod eq_folder;
-pub mod eq_tag_or_parents;
+pub mod eq_tag_or_children;
 pub mod eq_tag_string;
 pub mod eq_tag_string2;
 pub mod not;
@@ -137,21 +139,4 @@ impl Queryfragments {
     pub fn and(self, other: Self) -> Self {
         QueryAnd(self, other).into()
     }
-
-    pub fn parse(input: &str) -> Result<Self, InvalidSearchString> {
-        parse_expression(input)
-            .finish()
-            .map(|(_, res)| res)
-            .map_err(|err| InvalidSearchString {
-                nom_trace: convert_error(input, err),
-                backtrace: Backtrace::capture(),
-            })
-    }
-}
-
-#[derive(Debug, Snafu)]
-#[snafu(display("Couldn't parse the search query. Search trace: \n{nom_trace}"))]
-pub struct InvalidSearchString {
-    pub nom_trace: String,
-    backtrace: Backtrace,
 }

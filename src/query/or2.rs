@@ -1,4 +1,5 @@
 use crate::query::SQLQuery;
+use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
@@ -49,5 +50,18 @@ where
     fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         let query = self.0.bind(query);
         self.1.bind(query)
+    }
+}
+
+impl<T, U> From<QueryOr2<T, U>> for TagSearchQuery
+where
+    T: TagFilter,
+    TagSearchQuery: From<T> + From<U>,
+{
+    fn from(value: QueryOr2<T, U>) -> Self {
+        TagSearchQuery::Or(QueryOr2(
+            TagSearchQuery::from(value.0).boxed(),
+            TagSearchQuery::from(value.1).boxed(),
+        ))
     }
 }

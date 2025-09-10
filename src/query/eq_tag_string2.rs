@@ -2,6 +2,7 @@ use core::fmt::Display;
 use core::ops::AddAssign as _;
 
 use crate::query::SQLQuery;
+use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::trait_tag_filter::TagFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -43,5 +44,11 @@ impl TagFilter for EqTagString2 {
 impl<T: Display> From<T> for EqTagString2 {
     fn from(value: T) -> Self {
         Self(value.to_string())
+    }
+}
+
+impl From<EqTagString2> for TagSearchQuery {
+    fn from(value: EqTagString2) -> Self {
+        TagSearchQuery::EqTagString(value)
     }
 }

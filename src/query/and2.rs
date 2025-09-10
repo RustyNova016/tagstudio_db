@@ -1,4 +1,6 @@
 use crate::query::SQLQuery;
+use crate::query::entry_search_query::EntrySearchQuery;
+use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
@@ -53,11 +55,36 @@ where
     }
 }
 
+impl<T, U> From<QueryAnd2<T, U>> for TagSearchQuery
+where
+    T: TagFilter,
+    TagSearchQuery: From<T> + From<U>,
+{
+    fn from(value: QueryAnd2<T, U>) -> Self {
+        TagSearchQuery::And(QueryAnd2(
+            TagSearchQuery::from(value.0).boxed(),
+            TagSearchQuery::from(value.1).boxed(),
+        ))
+    }
+}
+
+impl<T, U> From<QueryAnd2<T, U>> for EntrySearchQuery
+where
+    EntrySearchQuery: From<T> + From<U>,
+{
+    fn from(value: QueryAnd2<T, U>) -> Self {
+        EntrySearchQuery::And(QueryAnd2(
+            EntrySearchQuery::from(value.0).boxed(),
+            EntrySearchQuery::from(value.1).boxed(),
+        ))
+    }
+}
+
 #[cfg(test)]
 pub mod test {
     use crate::query::and2::QueryAnd2;
     use crate::query::eq_tag_id::EqTagId;
-    use crate::query::eq_tag_or_parents::EqTagOrParents;
+    use crate::query::eq_tag_or_children::EqTagOrChildren;
     use crate::query::eq_tag_string2::EqTagString2;
     use crate::query::trait_tag_filter::TagFilter;
     use crate::tests::fixtures::assertions::assert_eq_entries;
@@ -66,8 +93,8 @@ pub mod test {
     pub async fn tag_and_test() {
         assert_eq_entries(
             QueryAnd2(
-                EqTagOrParents(EqTagId(1001)).into_entry_filter(),
-                EqTagOrParents(EqTagId(1003)).into_entry_filter(),
+                EqTagOrChildren(EqTagId(1001)).into_entry_filter(),
+                EqTagOrChildren(EqTagId(1003)).into_entry_filter(),
             ),
             vec![2],
         )
@@ -75,8 +102,8 @@ pub mod test {
 
         assert_eq_entries(
             QueryAnd2(
-                EqTagOrParents(EqTagString2::from("maxwell")).into_entry_filter(),
-                EqTagOrParents(EqTagString2::from("doge")).into_entry_filter(),
+                EqTagOrChildren(EqTagString2::from("maxwell")).into_entry_filter(),
+                EqTagOrChildren(EqTagString2::from("doge")).into_entry_filter(),
             ),
             vec![2],
         )

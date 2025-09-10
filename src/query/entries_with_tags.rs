@@ -3,6 +3,7 @@ use crate::query::SQLQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EntriesWithTags<T>(pub T)
 where
     T: TagFilter;

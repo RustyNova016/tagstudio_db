@@ -1,11 +1,13 @@
 use crate::query::SQLQuery;
+use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::trait_tag_filter::TagFilter;
 
-pub struct EqTagOrParents<T>(pub T)
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct EqTagOrChildren<T>(pub T)
 where
     T: TagFilter;
 
-impl<T> TagFilter for EqTagOrParents<T>
+impl<T> TagFilter for EqTagOrChildren<T>
 where
     T: TagFilter,
 {
@@ -35,5 +37,15 @@ where
 
     fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         self.0.bind(query)
+    }
+}
+
+impl<T> From<EqTagOrChildren<T>> for TagSearchQuery
+where
+    T: TagFilter,
+    TagSearchQuery: From<T>,
+{
+    fn from(value: EqTagOrChildren<T>) -> Self {
+        TagSearchQuery::EqTagOrChildren(EqTagOrChildren(TagSearchQuery::from(value.0).boxed()))
     }
 }

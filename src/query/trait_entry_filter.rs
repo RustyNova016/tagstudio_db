@@ -1,5 +1,6 @@
+use core::ops::Deref as _;
+
 use crate::Entry;
-use crate::Tag;
 use crate::query::SQLQuery;
 
 /// Trait for all the query fragments that can generate `WHERE` filter for a `SELECT` on the `entries` table
@@ -25,5 +26,18 @@ pub trait EntryFilter {
             .unwrap_or_else(|| "SELECT * FROM `entries`".to_string());
         let query = sqlx::query_as(&sql);
         self.bind(query).fetch_all(conn).await
+    }
+}
+
+impl<T> EntryFilter for Box<T>
+where
+    T: EntryFilter,
+{
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
+        self.deref().bind(query)
+    }
+
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+        self.deref().get_where_condition(bind_id)
     }
 }
