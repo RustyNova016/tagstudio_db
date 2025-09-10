@@ -1,12 +1,13 @@
-use core::ops::AddAssign;
+use core::ops::AddAssign as _;
 
-use crate::query::Queryfragments;
 use crate::query::SQLQuery;
+use crate::query::entry_search_query::EntrySearchQuery;
+use crate::query::trait_entry_filter::EntryFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct EqField {
-    field_type: String,
-    value: FieldValue,
+pub struct EqEntryField {
+    pub field_type: String,
+    pub value: FieldValue,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -16,17 +17,8 @@ pub enum FieldValue {
     Text(String),
 }
 
-impl EqField {
-    pub fn new(field_type: String, value: FieldValue) -> Self {
-        Self { field_type, value }
-    }
-
-    pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
-        bind_id.add_assign(2);
-        None
-    }
-
-    pub fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+impl EntryFilter for EqEntryField {
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         let type_id = *bind_id;
         bind_id.add_assign(1);
         let value_id = *bind_id;
@@ -53,7 +45,7 @@ impl EqField {
         ))
     }
 
-    pub fn bind<'q>(&'q self, query: SQLQuery<'q>) -> SQLQuery<'q> {
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         let query = query.bind(self.field_type.to_string());
 
         match &self.value {
@@ -64,30 +56,27 @@ impl EqField {
     }
 }
 
-impl From<EqField> for Queryfragments {
-    fn from(value: EqField) -> Self {
-        Queryfragments::EqField(value)
+impl From<EqEntryField> for EntrySearchQuery {
+    fn from(value: EqEntryField) -> Self {
+        EntrySearchQuery::EqEntryField(value)
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use crate::query::Queryfragments;
-    use crate::query::eq_field::EqField;
-    use crate::query::eq_field::FieldValue;
-    use crate::tests::fixtures::test_data::get_test_library;
+    use crate::query::eq_entry_field::EqEntryField;
+    use crate::query::eq_entry_field::FieldValue;
+    use crate::tests::fixtures::assertions::assert_eq_entries;
 
     #[tokio::test]
-    pub async fn tag_eq_test() {
-        let lib = get_test_library().await;
-
-        let result = Queryfragments::from(EqField::new(
-            "DESCRIPTION".into(),
-            FieldValue::Text("A very dingus cat".to_string()),
-        ))
-        .fetch_all(&mut lib.db.get().await.unwrap())
-        .await
-        .unwrap();
-        assert_eq!(result.len(), 1);
+    pub async fn eq_entry_id_test() {
+        assert_eq_entries(
+            EqEntryField {
+                field_type: "DESCRIPTION".into(),
+                value: FieldValue::Text("A very dingus cat".to_string()),
+            },
+            vec![0],
+        )
+        .await;
     }
 }

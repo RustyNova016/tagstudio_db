@@ -1,11 +1,9 @@
-use core::future::ready;
 use core::str::FromStr;
 use std::ffi::OsString;
 use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::NaiveDateTime;
-use futures::TryStreamExt;
 use sqlx::Acquire;
 use sqlx::FromRow;
 use tracing::debug;
@@ -13,8 +11,6 @@ use tracing::debug;
 use crate::models::folder::Folder;
 use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
-use crate::query::Queryfragments;
-use crate::query::eq_tag::EqTagString;
 
 pub mod reads;
 pub mod tags;
@@ -104,16 +100,6 @@ impl Entry {
         .await?)
     }
 
-    pub async fn search<'a>(
-        conn: &'a mut sqlx::SqliteConnection,
-        search: &'a Queryfragments,
-    ) -> Result<Vec<Self>, crate::Error> {
-        let sql = search.as_sql();
-        let query = sqlx::query_as(&sql);
-        let query = search.bind(query);
-        Ok(query.fetch_all(conn).await?)
-    }
-
     pub async fn get_folder(
         &self,
         conn: &mut sqlx::SqliteConnection,
@@ -194,22 +180,6 @@ impl Entry {
         trans.commit().await?;
 
         Ok(())
-    }
-
-    pub async fn has_tag(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        tag: &str,
-    ) -> Result<bool, crate::Error> {
-        let search = Queryfragments::EqTag(EqTagString::from(tag));
-        let sql = search.as_sql();
-        let query = sqlx::query_as(&sql);
-        let query = search.bind(query);
-
-        Ok(query
-            .fetch(conn)
-            .try_any(|entry| ready(entry.id == self.id))
-            .await?)
     }
 
     pub async fn add_text_field(
