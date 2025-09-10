@@ -1,59 +1,48 @@
-use crate::query::Queryfragments;
 use crate::query::SQLQuery;
+use crate::query::tag_search_query::TagSearchQuery;
+use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_tag_filter::TagFilter;
 
+/// Negate the condition
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct QueryNot(pub Queryfragments);
+pub struct QueryNot<T>(pub T);
 
-impl QueryNot {
-    pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
-        self.0.get_subquery(bind_id)
-    }
-
-    pub fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+impl<T> TagFilter for QueryNot<T>
+where
+    T: TagFilter,
+{
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         self.0
             .get_where_condition(bind_id)
             .map(|cond| format!("(NOT ({cond}))"))
     }
 
-    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         self.0.bind(query)
     }
 }
 
-impl From<Queryfragments> for QueryNot {
-    fn from(value: Queryfragments) -> Self {
-        Self(value)
+impl<T> EntryFilter for QueryNot<T>
+where
+    T: EntryFilter,
+{
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+        self.0
+            .get_where_condition(bind_id)
+            .map(|cond| format!("(NOT ({cond}))"))
+    }
+
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
+        self.0.bind(query)
     }
 }
 
-impl From<QueryNot> for Queryfragments {
-    fn from(value: QueryNot) -> Self {
-        Queryfragments::Not(Box::new(value))
-    }
-}
-
-impl Queryfragments {
-    pub fn into_not(self) -> Self {
-        QueryNot::from(self).into()
-    }
-}
-
-#[cfg(test)]
-pub mod test {
-    use crate::query::Queryfragments;
-    use crate::query::eq_tag_string::EqTagString;
-    use crate::query::not::QueryNot;
-    use crate::tests::fixtures::test_data::get_test_library;
-
-    #[tokio::test]
-    pub async fn query_not_test() {
-        let lib = get_test_library().await;
-
-        let result = Queryfragments::from(QueryNot(EqTagString::from("Maxwell").into()))
-            .fetch_all(&mut lib.db.get().await.unwrap())
-            .await
-            .unwrap();
-
-        assert_eq!(result.len(), 1);
+impl<T> From<QueryNot<T>> for TagSearchQuery
+where
+    T: TagFilter,
+    TagSearchQuery: From<T>,
+{
+    fn from(value: QueryNot<T>) -> Self {
+        TagSearchQuery::Not(QueryNot(TagSearchQuery::from(value.0).boxed()))
     }
 }

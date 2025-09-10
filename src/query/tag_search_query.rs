@@ -1,25 +1,25 @@
 use core::fmt::Display;
 
-use crate::query::and2::QueryAnd2;
+use crate::query::and::QueryAnd;
 use crate::query::entries_with_tags::EntriesWithTags;
 use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::eq_tag_id::EqTagId;
 use crate::query::eq_tag_or_children::EqTagOrChildren;
-use crate::query::eq_tag_string2::EqTagString2;
-use crate::query::not2::QueryNot2;
-use crate::query::or2::QueryOr2;
+use crate::query::eq_tag_string::EqTagString;
+use crate::query::not::QueryNot;
+use crate::query::or::QueryOr;
 use crate::query::trait_tag_filter::TagFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TagSearchQuery {
     EqTagId(EqTagId),
-    EqTagString(EqTagString2),
+    EqTagString(EqTagString),
 
     EqTagOrChildren(EqTagOrChildren<Box<TagSearchQuery>>),
-    Not(QueryNot2<Box<TagSearchQuery>>),
+    Not(QueryNot<Box<TagSearchQuery>>),
 
-    And(QueryAnd2<Box<TagSearchQuery>, Box<TagSearchQuery>>),
-    Or(QueryOr2<Box<TagSearchQuery>, Box<TagSearchQuery>>),
+    And(QueryAnd<Box<TagSearchQuery>, Box<TagSearchQuery>>),
+    Or(QueryOr<Box<TagSearchQuery>, Box<TagSearchQuery>>),
 }
 
 impl TagFilter for TagSearchQuery {
@@ -52,7 +52,7 @@ impl TagSearchQuery {
     }
 
     pub fn eq_tag_string<T: Display>(value: T) -> Self {
-        Self::EqTagString(EqTagString2::from(value))
+        Self::EqTagString(EqTagString::from(value))
     }
 
     pub fn add_children_tags_opaque(self) -> Self {
@@ -64,6 +64,6 @@ impl TagSearchQuery {
     }
 
     pub fn or(self, other: Self) -> Self {
-        Self::Or(QueryOr2(self.boxed(), other.boxed()))
+        Self::Or(QueryOr(self.boxed(), other.boxed()))
     }
 }

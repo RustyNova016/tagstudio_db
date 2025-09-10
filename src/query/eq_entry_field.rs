@@ -5,7 +5,7 @@ use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct EqEntryField2 {
+pub struct EqEntryField {
     pub field_type: String,
     pub value: FieldValue,
 }
@@ -17,7 +17,7 @@ pub enum FieldValue {
     Text(String),
 }
 
-impl EntryFilter for EqEntryField2 {
+impl EntryFilter for EqEntryField {
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         let type_id = *bind_id;
         bind_id.add_assign(1);
@@ -56,23 +56,27 @@ impl EntryFilter for EqEntryField2 {
     }
 }
 
-impl From<EqEntryField2> for EntrySearchQuery {
-    fn from(value: EqEntryField2) -> Self {
+impl From<EqEntryField> for EntrySearchQuery {
+    fn from(value: EqEntryField) -> Self {
         EntrySearchQuery::EqEntryField(value)
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use crate::query::eq_entry_field::EqEntryField2;
+    use crate::query::eq_entry_field::EqEntryField;
     use crate::query::eq_entry_field::FieldValue;
     use crate::tests::fixtures::assertions::assert_eq_entries;
 
     #[tokio::test]
     pub async fn eq_entry_id_test() {
-        assert_eq_entries(EqEntryField2 {
-            field_type: "DESCRIPTION".into(),
-             value: FieldValue::Text("A very dingus cat".to_string())
-        }, vec![4]).await;
+        assert_eq_entries(
+            EqEntryField {
+                field_type: "DESCRIPTION".into(),
+                value: FieldValue::Text("A very dingus cat".to_string()),
+            },
+            vec![4],
+        )
+        .await;
     }
 }

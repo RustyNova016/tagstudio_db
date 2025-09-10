@@ -1,23 +1,18 @@
-use crate::query::Queryfragments;
 use crate::query::SQLQuery;
+use crate::query::tag_search_query::TagSearchQuery;
+use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_tag_filter::TagFilter;
 
+/// Merge two filters with an `or` condition
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct QueryOr(pub Queryfragments, pub Queryfragments);
+pub struct QueryOr<T, U>(pub T, pub U);
 
-impl QueryOr {
-    pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
-        let q_a = self.0.get_subquery(bind_id);
-        let q_b = self.1.get_subquery(bind_id);
-
-        match (q_a, q_b) {
-            (Some(a), Some(b)) => Some(format!("{a}, {b}")),
-            (Some(a), None) => Some(a),
-            (None, Some(b)) => Some(b),
-            (None, None) => None,
-        }
-    }
-
-    pub fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+impl<T, U> TagFilter for QueryOr<T, U>
+where
+    T: TagFilter,
+    U: TagFilter,
+{
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         let q_a = self.0.get_where_condition(bind_id);
         let q_b = self.1.get_where_condition(bind_id);
 
@@ -29,36 +24,65 @@ impl QueryOr {
         }
     }
 
-    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         let query = self.0.bind(query);
         self.1.bind(query)
     }
 }
 
-impl From<QueryOr> for Queryfragments {
-    fn from(value: QueryOr) -> Self {
-        Queryfragments::Or(Box::new(value))
+impl<T, U> EntryFilter for QueryOr<T, U>
+where
+    T: EntryFilter,
+    U: EntryFilter,
+{
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+        let q_a = self.0.get_where_condition(bind_id);
+        let q_b = self.1.get_where_condition(bind_id);
+
+        match (q_a, q_b) {
+            (Some(a), Some(b)) => Some(format!("({a} OR {b})")),
+            (Some(a), None) => Some(a),
+            (None, Some(b)) => Some(b),
+            (None, None) => None,
+        }
+    }
+
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
+        let query = self.0.bind(query);
+        self.1.bind(query)
+    }
+}
+
+impl<T, U> From<QueryOr<T, U>> for TagSearchQuery
+where
+    T: TagFilter,
+    TagSearchQuery: From<T> + From<U>,
+{
+    fn from(value: QueryOr<T, U>) -> Self {
+        TagSearchQuery::Or(QueryOr(
+            TagSearchQuery::from(value.0).boxed(),
+            TagSearchQuery::from(value.1).boxed(),
+        ))
     }
 }
 
 #[cfg(test)]
 pub mod test {
-    use crate::query::Queryfragments;
-    use crate::query::and::QueryAnd;
+    use crate::query::eq_tag_or_children::EqTagOrChildren;
     use crate::query::eq_tag_string::EqTagString;
-    use crate::tests::fixtures::test_data::get_test_library;
+    use crate::query::or::QueryOr;
+    use crate::query::trait_tag_filter::TagFilter;
+    use crate::tests::fixtures::assertions::assert_eq_entries;
 
     #[tokio::test]
-    pub async fn tag_and_test() {
-        let lib = get_test_library().await;
-
-        let result = Queryfragments::from(QueryAnd(
-            EqTagString::from("Maxwell").into(),
-            EqTagString::from("Doge").into(),
-        ))
-        .fetch_all(&mut lib.db.get().await.unwrap())
-        .await
-        .unwrap();
-        assert_eq!(result.len(), 1);
+    pub async fn tag_or_test() {
+        assert_eq_entries(
+            QueryOr(
+                EqTagOrChildren(EqTagString::from("maxwell")).into_entry_filter(),
+                EqTagOrChildren(EqTagString::from("doge")).into_entry_filter(),
+            ),
+            vec![0, 1, 2],
+        )
+        .await;
     }
 }

@@ -1,58 +1,40 @@
-use core::ops::AddAssign;
+use core::ops::AddAssign as _;
 
-use crate::query::Queryfragments;
 use crate::query::SQLQuery;
+use crate::query::entry_search_query::EntrySearchQuery;
+use crate::query::trait_entry_filter::EntryFilter;
 
-/// Check if the entry has the same folder as
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct EqEntryFolder {
-    folder: String,
-}
+pub struct EqEntryFolder(pub String);
 
-impl EqEntryFolder {
-    pub fn new(folder: String) -> Self {
-        Self { folder }
-    }
-
-    pub fn get_subquery(&self, bind_id: &mut u64) -> Option<String> {
-        bind_id.add_assign(1);
-        None
-    }
-
-    pub fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
-        let id_bind = *bind_id;
+impl EntryFilter for EqEntryFolder {
+    fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
+        let id = *bind_id;
         bind_id.add_assign(1);
 
         Some(format!(
-            "replace(`entries`.`path`, `entries`.`filename`, '') =  ${id_bind}"
+            "replace(`entries`.`path`, `entries`.`filename`, '') =  ${id}"
         ))
     }
 
-    pub fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
-        query.bind(&self.folder)
+    fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
+        query.bind(&self.0)
     }
 }
 
-impl From<EqEntryFolder> for Queryfragments {
+impl From<EqEntryFolder> for EntrySearchQuery {
     fn from(value: EqEntryFolder) -> Self {
-        Queryfragments::EqEntryFolder(value)
+        EntrySearchQuery::EqEntryFolder(value)
     }
 }
 
-// #[cfg(test)]
-// pub mod test {
-//     use crate::query::Queryfragments;
-//     use crate::query::eq_any_entry_id::EqAnyEntryId;
-//     use crate::tests::fixtures::test_data::get_test_library;
+#[cfg(test)]
+pub mod test {
+    use crate::query::eq_folder::EqEntryFolder;
+    use crate::tests::fixtures::assertions::assert_eq_entries;
 
-//     #[tokio::test]
-//     pub async fn tag_eq_test() {
-//         let lib = get_test_library().await;
-
-//         let result = Queryfragments::from(EqAnyEntryId::new1(0))
-//             .fetch_all(&mut lib.db.get().await.unwrap())
-//             .await
-//             .unwrap();
-//         assert_eq!(result.len(), 1);
-//     }
-// }
+    #[tokio::test]
+    pub async fn eq_entry_id_test() {
+        assert_eq_entries(EqEntryFolder("somwhere/far/".to_string()), vec![4]).await;
+    }
+}

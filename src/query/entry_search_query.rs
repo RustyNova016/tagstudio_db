@@ -4,13 +4,13 @@ use nom::Finish as _;
 use nom_language::error::convert_error;
 use snafu::Snafu;
 
-use crate::query::and2::QueryAnd2;
+use crate::query::and::QueryAnd;
 use crate::query::entries_with_tags::EntriesWithTags;
-use crate::query::eq_entry_field::EqEntryField2;
-use crate::query::eq_entry_id2::EqEntryId;
-use crate::query::eq_folder2::EqEntryFolder2;
-use crate::query::not2::QueryNot2;
-use crate::query::or2::QueryOr2;
+use crate::query::eq_entry_field::EqEntryField;
+use crate::query::eq_entry_id::EqEntryId;
+use crate::query::eq_folder::EqEntryFolder;
+use crate::query::not::QueryNot;
+use crate::query::or::QueryOr;
 use crate::query::parse_expression;
 use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
@@ -18,14 +18,14 @@ use crate::query::trait_entry_filter::EntryFilter;
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum EntrySearchQuery {
     EqEntryId(EqEntryId),
-    EqEntryFolder(EqEntryFolder2),
-    EqEntryField(EqEntryField2),
+    EqEntryFolder(EqEntryFolder),
+    EqEntryField(EqEntryField),
 
     EntriesWithTags(EntriesWithTags<Box<TagSearchQuery>>),
-    Not(QueryNot2<Box<EntrySearchQuery>>),
+    Not(QueryNot<Box<EntrySearchQuery>>),
 
-    And(QueryAnd2<Box<EntrySearchQuery>, Box<EntrySearchQuery>>),
-    Or(QueryOr2<Box<EntrySearchQuery>, Box<EntrySearchQuery>>),
+    And(QueryAnd<Box<EntrySearchQuery>, Box<EntrySearchQuery>>),
+    Or(QueryOr<Box<EntrySearchQuery>, Box<EntrySearchQuery>>),
 }
 
 impl EntryFilter for EntrySearchQuery {
@@ -60,15 +60,15 @@ impl EntrySearchQuery {
     }
 
     pub fn and(self, other: Self) -> Self {
-        Self::And(QueryAnd2(self.boxed(), other.boxed()))
+        Self::And(QueryAnd(self.boxed(), other.boxed()))
     }
 
     pub fn or(self, other: Self) -> Self {
-        Self::Or(QueryOr2(self.boxed(), other.boxed()))
+        Self::Or(QueryOr(self.boxed(), other.boxed()))
     }
 
     pub fn not(self) -> Self {
-        Self::Not(QueryNot2(self.boxed()))
+        Self::Not(QueryNot(self.boxed()))
     }
 
     pub fn parse(input: &str) -> Result<Self, InvalidSearchString> {

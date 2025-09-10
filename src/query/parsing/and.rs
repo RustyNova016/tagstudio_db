@@ -46,8 +46,6 @@ pub mod test {
     use nom::Finish as _;
     use nom_language::error::VerboseError;
 
-    use crate::query::and::QueryAnd;
-    use crate::query::any_tag_string::AnyTagString;
     use crate::query::parsing::and::parse_explicit_and;
     use crate::query::parsing::and::parse_implicit_and;
     use crate::query::parsing::assert_nom;

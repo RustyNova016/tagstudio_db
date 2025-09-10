@@ -28,7 +28,7 @@ impl From<EqEntryId> for EntrySearchQuery {
 
 #[cfg(test)]
 pub mod test {
-    use crate::query::eq_entry_id2::EqEntryId;
+    use crate::query::eq_entry_id::EqEntryId;
     use crate::tests::fixtures::assertions::assert_eq_entries;
 
     #[tokio::test]
