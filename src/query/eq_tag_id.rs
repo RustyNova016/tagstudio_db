@@ -16,7 +16,7 @@ impl TagFilter for EqTagId {
     }
 
     fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
-        query.bind(&self.0)
+        query.bind(self.0)
     }
 }
 

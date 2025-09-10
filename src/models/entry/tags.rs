@@ -1,23 +1,40 @@
 use crate::Entry;
 use crate::Tag;
-use crate::query::Queryfragments;
-use crate::query::eq_any_entry_id::EqAnyEntryId;
+use crate::query::and::QueryAnd;
+use crate::query::eq_entry_id::EqEntryId;
 use crate::query::eq_tag_string::EqTagString;
+use crate::query::trait_entry_filter::EntryFilter as _;
+use crate::query::trait_tag_filter::TagFilter as _;
 
 impl Entry {
-    /// Return true if the entry has a tag, tag parent or alias that match the input string
-    pub async fn match_tag(
+    /// Return true if the entry has the exact tag provided. This also checks the tag aliases and shorthand
+    pub async fn match_exact_tag(
         &self,
         conn: &mut sqlx::SqliteConnection,
         tag: &str,
     ) -> Result<bool, crate::Error> {
-        let search =
-            Queryfragments::EqTag(EqTagString::from(tag)).and(EqAnyEntryId::new1(self.id).into());
-        let sql = search.as_sql();
-        let query = sqlx::query_as(&sql);
-        let query = search.bind::<Entry>(query);
+        let search = QueryAnd(
+            EqEntryId(self.id),
+            EqTagString::from(tag).into_entry_filter(),
+        );
 
-        Ok(query.fetch_optional(conn).await?.is_some())
+        Ok(!search.fetch_all(conn).await?.is_empty())
+    }
+
+    /// Return true if the entry has the tag provided, or has a tag that is a children of the tag provided. This also checks the tag aliases and shorthand
+    pub async fn match_tag_or_child_of_tag(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+        tag: &str,
+    ) -> Result<bool, crate::Error> {
+        let search = QueryAnd(
+            EqEntryId(self.id),
+            EqTagString::from(tag)
+                .add_children_tags()
+                .into_entry_filter(),
+        );
+
+        Ok(!search.fetch_all(conn).await?.is_empty())
     }
 
     pub async fn get_tags(

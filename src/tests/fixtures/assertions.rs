@@ -5,7 +5,7 @@ use crate::tests::fixtures::test_data::get_test_library;
 
 pub async fn assert_eq_entries<T>(query: T, mut expected: Vec<i64>)
 where
-    T: EntryFilter,
+    T: EntryFilter + Sync,
 {
     let lib = get_test_library().await;
 
@@ -14,7 +14,7 @@ where
     println!();
 
     let results = query
-        .fetch_all(&mut *lib.db.get().await.unwrap())
+        .fetch_all(&mut lib.db.get().await.unwrap())
         .await
         .unwrap();
 

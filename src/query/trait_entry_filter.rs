@@ -17,15 +17,20 @@ pub trait EntryFilter {
             .map(|wher| format!("SELECT * FROM `entries` WHERE ({wher})"))
     }
 
-    async fn fetch_all(
+    fn fetch_all(
         &self,
         conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Vec<Entry>, sqlx::Error> {
-        let sql = self
-            .as_entry_select(&mut 1)
-            .unwrap_or_else(|| "SELECT * FROM `entries`".to_string());
-        let query = sqlx::query_as(&sql);
-        self.bind(query).fetch_all(conn).await
+    ) -> impl std::future::Future<Output = Result<Vec<Entry>, sqlx::Error>> + Send
+    where
+        Self: Sync,
+    {
+        async {
+            let sql = self
+                .as_entry_select(&mut 1)
+                .unwrap_or_else(|| "SELECT * FROM `entries`".to_string());
+            let query = sqlx::query_as(&sql);
+            self.bind(query).fetch_all(conn).await
+        }
     }
 }
 

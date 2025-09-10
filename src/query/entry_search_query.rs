@@ -67,7 +67,7 @@ impl EntrySearchQuery {
         Self::Or(QueryOr(self.boxed(), other.boxed()))
     }
 
-    pub fn not(self) -> Self {
+    pub fn invert(self) -> Self {
         Self::Not(QueryNot(self.boxed()))
     }
 

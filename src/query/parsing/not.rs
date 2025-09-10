@@ -19,7 +19,7 @@ where
     let (leftover_input, cond) =
         preceded(not_parser, parse_filter_token_or_subexpr).parse(input)?;
 
-    Ok((leftover_input, cond.not()))
+    Ok((leftover_input, cond.invert()))
 }
 
 #[cfg(test)]
@@ -40,7 +40,7 @@ pub mod test {
                 TagSearchQuery::eq_tag_string("maxwell")
                     .add_children_tags_opaque()
                     .into_entry_search_query()
-                    .not(),
+                    .invert(),
             ),
         );
 

@@ -19,12 +19,20 @@ pub trait TagFilter {
             .map(|wher| format!("SELECT * FROM `tags` WHERE ({wher})"))
     }
 
-    async fn fetch_all(&self, conn: &mut sqlx::SqliteConnection) -> Result<Vec<Tag>, sqlx::Error> {
-        let sql = self
-            .as_tag_select(&mut 1)
-            .unwrap_or_else(|| "SELECT * FROM `tags`".to_string());
-        let query = sqlx::query_as(&sql);
-        self.bind(query).fetch_all(conn).await
+    fn fetch_all(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> impl std::future::Future<Output = Result<Vec<Tag>, sqlx::Error>> + Send
+    where
+        Self: Sync,
+    {
+        async {
+            let sql = self
+                .as_tag_select(&mut 1)
+                .unwrap_or_else(|| "SELECT * FROM `tags`".to_string());
+            let query = sqlx::query_as(&sql);
+            self.bind(query).fetch_all(conn).await
+        }
     }
 
     fn into_entry_filter(self) -> EntriesWithTags<Self>

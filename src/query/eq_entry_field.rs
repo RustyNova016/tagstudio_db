@@ -75,7 +75,7 @@ pub mod test {
                 field_type: "DESCRIPTION".into(),
                 value: FieldValue::Text("A very dingus cat".to_string()),
             },
-            vec![4],
+            vec![0],
         )
         .await;
     }
