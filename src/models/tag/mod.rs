@@ -7,6 +7,9 @@ use streamies::TryStreamies as _;
 use tracing::debug;
 
 use crate::models::alias::TagAlias;
+use crate::query::eq_tag_id::EqTagId;
+use crate::query::trait_entry_filter::EntryFilter as _;
+use crate::query::trait_tag_filter::TagFilter as _;
 
 pub mod find;
 
@@ -96,6 +99,16 @@ impl Tag {
     ) -> Result<(), crate::Error> {
         let mut trans = conn.begin().await?;
 
+        // Add the new tag to the entries with the old tag
+        let entries = EqTagId(other.id)
+            .into_entry_filter()
+            .fetch_all(&mut trans)
+            .await?;
+        for entry in entries {
+            entry.add_tag(&mut trans, self.id).await?;
+        }
+
+        // Merge the tag data
         self.add_alias(&mut trans, &other.name).await?;
         self.add_alias(&mut trans, &other.shorthand.clone().unwrap_or_default())
             .await?;
