@@ -7,7 +7,6 @@ use nom::sequence::delimited;
 use nom::sequence::preceded;
 
 use crate::query::entry_search_query::EntrySearchQuery;
-use crate::query::not::QueryNot;
 use crate::query::parsing::expression::parse_filter_token_or_subexpr;
 use crate::query::parsing::sp;
 use crate::query::parsing::sp1;

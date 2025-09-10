@@ -6,6 +6,9 @@ use snafu::Snafu;
 
 use crate::query::and2::QueryAnd2;
 use crate::query::entries_with_tags::EntriesWithTags;
+use crate::query::eq_entry_field::EqEntryField2;
+use crate::query::eq_entry_id2::EqEntryId;
+use crate::query::eq_folder2::EqEntryFolder2;
 use crate::query::not2::QueryNot2;
 use crate::query::or2::QueryOr2;
 use crate::query::parse_expression;
@@ -14,8 +17,11 @@ use crate::query::trait_entry_filter::EntryFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum EntrySearchQuery {
-    EntriesWithTags(EntriesWithTags<Box<TagSearchQuery>>),
+    EqEntryId(EqEntryId),
+    EqEntryFolder(EqEntryFolder2),
+    EqEntryField(EqEntryField2),
 
+    EntriesWithTags(EntriesWithTags<Box<TagSearchQuery>>),
     Not(QueryNot2<Box<EntrySearchQuery>>),
 
     And(QueryAnd2<Box<EntrySearchQuery>, Box<EntrySearchQuery>>),
@@ -25,6 +31,9 @@ pub enum EntrySearchQuery {
 impl EntryFilter for EntrySearchQuery {
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         match self {
+            Self::EqEntryId(val) => val.get_where_condition(bind_id),
+            Self::EqEntryFolder(val) => val.get_where_condition(bind_id),
+            Self::EqEntryField(val) => val.get_where_condition(bind_id),
             Self::EntriesWithTags(val) => val.get_where_condition(bind_id),
             Self::Not(val) => val.get_where_condition(bind_id),
             Self::And(val) => val.get_where_condition(bind_id),
@@ -34,6 +43,9 @@ impl EntryFilter for EntrySearchQuery {
 
     fn bind<'q, O>(&'q self, query: super::SQLQuery<'q, O>) -> super::SQLQuery<'q, O> {
         match self {
+            Self::EqEntryId(val) => val.bind(query),
+            Self::EqEntryFolder(val) => val.bind(query),
+            Self::EqEntryField(val) => val.bind(query),
             Self::EntriesWithTags(val) => val.bind(query),
             Self::Not(val) => val.bind(query),
             Self::And(val) => val.bind(query),

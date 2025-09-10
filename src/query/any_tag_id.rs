@@ -2,7 +2,6 @@ use core::ops::AddAssign as _;
 
 use crate::query::Queryfragments;
 use crate::query::SQLQuery;
-use crate::query::trait_tag_filter::TagFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct AnyTagId {

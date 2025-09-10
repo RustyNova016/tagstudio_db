@@ -29,8 +29,6 @@ where
 pub mod test {
     use nom_language::error::VerboseError;
 
-    use crate::query::any_tag_string::AnyTagString;
-    use crate::query::or::QueryOr;
     use crate::query::parsing::assert_nom;
     use crate::query::parsing::or::parse_explicit_or;
     use crate::query::tag_search_query::TagSearchQuery;

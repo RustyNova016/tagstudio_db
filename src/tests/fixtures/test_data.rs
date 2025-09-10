@@ -20,6 +20,7 @@ INSERT INTO entries VALUES(0,0,'maxwell.png','maxwell.png','.png',NULL,NULL,NULL
 INSERT INTO entries VALUES(1,0,'doge.png','doge.png','.png',NULL,NULL,NULL);
 INSERT INTO entries VALUES(2,0,'doge_and_maxwell.png','doge_and_maxwell.png','.jpeg',NULL,NULL,NULL);
 INSERT INTO entries VALUES(3,0,'OIIA.png','OIIA.png','.png',NULL,NULL,NULL);
+INSERT INTO entries VALUES(4,0,'somwhere/far/away.png','away.png','.png',NULL,NULL,NULL);
 
 INSERT INTO tags VALUES(1000,'Cat',NULL,NULL,NULL,0,NULL,NULL);
 INSERT INTO tags VALUES(1001,'Maxwell',NULL,NULL,NULL,0,NULL,NULL);

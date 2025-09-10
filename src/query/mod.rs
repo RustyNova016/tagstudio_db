@@ -1,3 +1,6 @@
+pub mod eq_entry_field;
+pub mod eq_folder2;
+pub mod eq_entry_id2;
 pub mod entry_search_query;
 pub mod eq_tag_id;
 pub mod tag_search_query;

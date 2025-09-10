@@ -8,7 +8,6 @@ use nom::error::ParseError;
 use nom::error::context;
 use nom::sequence::preceded;
 
-use crate::query::Queryfragments;
 use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::parsing::and::parse_explicit_and;
 use crate::query::parsing::and::parse_implicit_and;

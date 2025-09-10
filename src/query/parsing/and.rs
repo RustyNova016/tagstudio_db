@@ -7,7 +7,6 @@ use nom::error::context;
 use nom::sequence::delimited;
 use nom::sequence::separated_pair;
 
-use crate::query::and::QueryAnd;
 use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::parsing::expression::parse_filter_token_or_subexpr;
 use crate::query::parsing::sp1;
