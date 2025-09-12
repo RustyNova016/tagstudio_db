@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM `datetime_fields` WHERE entry_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "1c3dabe16d149a167bdac6432246f617b37e294ec13a2da87dd6e7fd6ad1c5ee"
+}

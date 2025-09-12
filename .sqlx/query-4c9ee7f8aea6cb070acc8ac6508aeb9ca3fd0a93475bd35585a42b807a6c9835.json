@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE OR IGNORE `tag_entries` SET entry_id = $1 WHERE entry_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "4c9ee7f8aea6cb070acc8ac6508aeb9ca3fd0a93475bd35585a42b807a6c9835"
+}

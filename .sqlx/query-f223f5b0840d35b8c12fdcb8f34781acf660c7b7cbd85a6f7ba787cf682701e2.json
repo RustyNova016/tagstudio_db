@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM `boolean_fields` WHERE entry_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "f223f5b0840d35b8c12fdcb8f34781acf660c7b7cbd85a6f7ba787cf682701e2"
+}
