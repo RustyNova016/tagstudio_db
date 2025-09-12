@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE OR IGNORE `datetime_fields` SET entry_id = $1 WHERE entry_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "f9f7c9c1c452451a868caa638086cd2977113dc306a10c51b40620d89f615793"
+}

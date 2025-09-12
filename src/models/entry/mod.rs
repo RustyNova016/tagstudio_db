@@ -190,4 +190,6 @@ impl Entry {
     ) -> Result<(), crate::Error> {
         TextField::insert_text_field(conn, self.id, type_key, value).await
     }
+
+
 }
