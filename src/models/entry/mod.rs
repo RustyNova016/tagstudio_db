@@ -11,6 +11,8 @@ use tracing::debug;
 use crate::models::folder::Folder;
 use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
+use crate::query::eq_absolute_path::EqAbsolutePath;
+use crate::query::trait_entry_filter::EntryFilter;
 
 pub mod reads;
 pub mod tags;
@@ -83,21 +85,9 @@ impl Entry {
         conn: &mut sqlx::SqliteConnection,
         path: &Path,
     ) -> Result<Vec<Self>, crate::Error> {
-        let path_string = path.to_string_lossy();
-
-        Ok(sqlx::query_as!(
-            Self,
-            "SELECT `entries`.*
-                    FROM `entries`
-                        INNER JOIN `folders` ON `folders`.id = `entries`.`folder_id`
-                    WHERE
-                        `folders`.`path` + '/' + `entries`.`path` = $1 OR -- UNIX
-                        `folders`.`path` + '\\' + `entries`.`path` = $1   -- Windows
-                    ",
-            path_string
-        )
-        .fetch_all(&mut *conn)
-        .await?)
+        Ok(EqAbsolutePath(path.to_string_lossy().to_string())
+            .fetch_all(conn)
+            .await?)
     }
 
     pub async fn get_folder(

@@ -14,7 +14,7 @@ pub async fn get_test_library() -> Library {
 pub const DB102_TEST_DATA: &str = r#"
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
-INSERT INTO folders VALUES(0,'/tmp/','uuid');
+INSERT INTO folders VALUES(0,'/tmp','uuid');
 
 INSERT INTO entries VALUES(0,0,'maxwell.png','maxwell.png','.png',NULL,NULL,NULL);
 INSERT INTO entries VALUES(1,0,'doge.png','doge.png','.png',NULL,NULL,NULL);
