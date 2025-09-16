@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 /// Represent a root folder of the library
 pub struct Folder {
     pub id: i64,
@@ -17,5 +19,9 @@ impl Folder {
                 .fetch_optional(conn)
                 .await?,
         )
+    }
+
+    pub fn path_as_pathbuf(&self) -> PathBuf {
+        PathBuf::from(&self.path)
     }
 }

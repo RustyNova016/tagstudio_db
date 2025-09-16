@@ -6,6 +6,7 @@ use snafu::Snafu;
 
 use crate::query::and::QueryAnd;
 use crate::query::entries_with_tags::EntriesWithTags;
+use crate::query::eq_absolute_path::EqAbsolutePath;
 use crate::query::eq_any_entry_id::EqAnyEntryId;
 use crate::query::eq_entry_field::EqEntryField;
 use crate::query::eq_entry_id::EqEntryId;
@@ -22,6 +23,7 @@ pub enum EntrySearchQuery {
     EqAnyEntryId(EqAnyEntryId),
     EqEntryFolder(EqEntryFolder),
     EqEntryField(EqEntryField),
+    EqAbsolutePath(EqAbsolutePath),
 
     EntriesWithTags(EntriesWithTags<Box<TagSearchQuery>>),
     Not(QueryNot<Box<EntrySearchQuery>>),
@@ -37,6 +39,7 @@ impl EntryFilter for EntrySearchQuery {
             Self::EqAnyEntryId(val) => val.get_where_condition(bind_id),
             Self::EqEntryFolder(val) => val.get_where_condition(bind_id),
             Self::EqEntryField(val) => val.get_where_condition(bind_id),
+            Self::EqAbsolutePath(val) => val.get_where_condition(bind_id),
             Self::EntriesWithTags(val) => val.get_where_condition(bind_id),
             Self::Not(val) => val.get_where_condition(bind_id),
             Self::And(val) => val.get_where_condition(bind_id),
@@ -50,6 +53,7 @@ impl EntryFilter for EntrySearchQuery {
             Self::EqAnyEntryId(val) => val.bind(query),
             Self::EqEntryFolder(val) => val.bind(query),
             Self::EqEntryField(val) => val.bind(query),
+            Self::EqAbsolutePath(val) => val.bind(query),
             Self::EntriesWithTags(val) => val.bind(query),
             Self::Not(val) => val.bind(query),
             Self::And(val) => val.bind(query),
