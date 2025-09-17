@@ -1,6 +1,9 @@
 use futures::Stream;
+use snafu::ResultExt as _;
 
 use crate::Entry;
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 
 impl Entry {
     pub fn stream_entries(
@@ -13,8 +16,8 @@ impl Entry {
     pub async fn find_by_filename(
         conn: &mut sqlx::SqliteConnection,
         name: &str,
-    ) -> Result<Vec<Self>, crate::Error> {
-        Ok(sqlx::query_as!(
+    ) -> Result<Vec<Self>, SqlxError> {
+        sqlx::query_as!(
             Self,
             "
             SELECT `entries`.* 
@@ -23,6 +26,7 @@ impl Entry {
             name
         )
         .fetch_all(conn)
-        .await?)
+        .await
+        .context(SqlxSnafu)
     }
 }

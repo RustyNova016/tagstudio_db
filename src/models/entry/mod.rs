@@ -4,14 +4,16 @@ use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::NaiveDateTime;
-use sqlx::Acquire;
+use snafu::ResultExt as _;
 use sqlx::FromRow;
 use tracing::debug;
 
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::folder::Folder;
-use crate::models::tag::Tag;
 use crate::models::text_field::TextField;
 use crate::query::eq_absolute_path::EqAbsolutePath;
+use crate::query::eq_entry_id::EqEntryId;
 use crate::query::trait_entry_filter::EntryFilter;
 
 pub mod reads;
@@ -33,10 +35,10 @@ pub struct Entry {
 }
 
 impl Entry {
-    pub async fn insert(&self, conn: &mut sqlx::SqliteConnection) -> Result<Self, crate::Error> {
+    pub async fn insert(&self, conn: &mut sqlx::SqliteConnection) -> Result<Self, SqlxError> {
         debug!("Adding entry `{}`", self.path);
 
-        Ok(sqlx::query_as!(
+        sqlx::query_as!(
             Self,
             "INSERT INTO `entries` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
             self.folder_id,
@@ -48,27 +50,24 @@ impl Entry {
             self.date_added
         )
         .fetch_one(conn)
-        .await?)
+        .await
+        .context(SqlxSnafu)
     }
 
     /// Get the row by its id
     pub async fn find_by_id(
         conn: &mut sqlx::SqliteConnection,
         id: i64,
-    ) -> Result<Option<Self>, crate::Error> {
-        Ok(
-            sqlx::query_as!(Self, "SELECT * FROM `entries` WHERE `id` = ?", id)
-                .fetch_optional(conn)
-                .await?,
-        )
+    ) -> Result<Option<Self>, SqlxError> {
+        EqEntryId(id).fetch_optional(conn).await
     }
 
     /// Get the row by its path
     pub async fn find_by_path(
         conn: &mut sqlx::SqliteConnection,
         path: &str,
-    ) -> Result<Vec<Self>, crate::Error> {
-        Ok(sqlx::query_as!(
+    ) -> Result<Vec<Self>, SqlxError> {
+        sqlx::query_as!(
             Self,
             "
             SELECT `entries`.* 
@@ -77,23 +76,21 @@ impl Entry {
             path
         )
         .fetch_all(conn)
-        .await?)
+        .await
+        .context(SqlxSnafu)
     }
 
     /// Get the entry by its cannon path (Aka, the library's root path + the file's path in the library)
     pub async fn find_by_cannon_path(
         conn: &mut sqlx::SqliteConnection,
         path: &Path,
-    ) -> Result<Vec<Self>, crate::Error> {
-        Ok(EqAbsolutePath(path.to_string_lossy().to_string())
+    ) -> Result<Vec<Self>, SqlxError> {
+        EqAbsolutePath(path.to_string_lossy().to_string())
             .fetch_all(conn)
-            .await?)
+            .await
     }
 
-    pub async fn get_folder(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Folder, crate::Error> {
+    pub async fn get_folder(&self, conn: &mut sqlx::SqliteConnection) -> Result<Folder, SqlxError> {
         Folder::find_by_id(conn, self.folder_id)
             .await
             .transpose()
@@ -104,7 +101,7 @@ impl Entry {
     pub async fn get_global_path(
         &self,
         conn: &mut sqlx::SqliteConnection,
-    ) -> Result<PathBuf, crate::Error> {
+    ) -> Result<PathBuf, SqlxError> {
         let root_path = self.get_folder(&mut *conn).await?.path;
         let mut path = PathBuf::from(root_path);
         path.push(&self.path);
@@ -126,8 +123,8 @@ impl Entry {
     pub async fn get_text_fields(
         &self,
         conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Vec<TextField>, crate::Error> {
-        Ok(sqlx::query_as!(
+    ) -> Result<Vec<TextField>, SqlxError> {
+        sqlx::query_as!(
             TextField,
             "SELECT `text_fields`.* 
             FROM `entries` 
@@ -137,39 +134,8 @@ impl Entry {
             self.id
         )
         .fetch_all(conn)
-        .await?)
-    }
-
-    pub async fn add_tag(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        tag_id: i64,
-    ) -> Result<(), crate::Error> {
-        debug!("Adding tag {tag_id} to entry {}", self.id);
-        sqlx::query!(
-            "INSERT OR IGNORE INTO `tag_entries`(entry_id, tag_id) VALUES (?, ?)",
-            self.id,
-            tag_id
-        )
-        .execute(conn)
-        .await?;
-        Ok(())
-    }
-
-    pub async fn add_tags(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        tags: &Vec<Tag>,
-    ) -> Result<(), crate::Error> {
-        let mut trans = conn.begin().await?;
-
-        for tag in tags {
-            self.add_tag(&mut trans, tag.id).await?;
-        }
-
-        trans.commit().await?;
-
-        Ok(())
+        .await
+        .context(SqlxSnafu)
     }
 
     pub async fn add_text_field(
@@ -177,7 +143,7 @@ impl Entry {
         conn: &mut sqlx::SqliteConnection,
         type_key: &str,
         value: &str,
-    ) -> Result<(), crate::Error> {
+    ) -> Result<(), SqlxError> {
         TextField::insert_text_field(conn, self.id, type_key, value).await
     }
 }

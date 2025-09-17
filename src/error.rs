@@ -3,6 +3,8 @@ use std::path::PathBuf;
 
 use thiserror::Error;
 
+use crate::models::errors::sqlx_error::SqlxError;
+
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Couldn't find the library")]
@@ -12,7 +14,7 @@ pub enum Error {
     PathNotInFolder,
 
     #[error(transparent)]
-    Sqlx(#[from] sqlx::Error),
+    Sqlx(#[from] SqlxError),
 
     #[error(transparent)]
     IO(#[from] io::Error),

@@ -13,6 +13,8 @@ use tracing::debug;
 use crate::TSPoolError;
 use crate::client::conn_pool::PoolManager;
 use crate::client::conn_pool::TSConnectionPool;
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::folder::Folder;
 
 /// A struct representing a TagStudio library.
@@ -56,6 +58,7 @@ impl Library {
         let string_lossy = path.to_string_lossy();
         debug!("Openning DB `{}`", string_lossy);
         let optconn = SqliteConnectOptions::from_str(&string_lossy)
+            .context(SqlxSnafu)
             .context(SqlSnafu)?
             .busy_timeout(Duration::from_secs(600));
         let pool = PoolManager::create_pool(optconn);
@@ -72,8 +75,9 @@ impl Library {
 
         let string_lossy = path.to_string_lossy();
         debug!("Openning DB `{}`", string_lossy);
-        let optconn =
-            SqliteConnectOptions::from_str(&string_lossy)?.busy_timeout(Duration::from_secs(600));
+        let optconn = SqliteConnectOptions::from_str(&string_lossy)
+            .context(SqlxSnafu)?
+            .busy_timeout(Duration::from_secs(600));
         let pool = PoolManager::create_pool(optconn);
 
         Ok(Self {
@@ -115,8 +119,8 @@ impl Library {
     }
 
     /// Create a new library in memory.
-    pub fn in_memory() -> Result<Self, crate::Error> {
-        let optconn = SqliteConnectOptions::from_str(":memory:")?;
+    pub fn in_memory() -> Result<Self, SqlxError> {
+        let optconn = SqliteConnectOptions::from_str(":memory:").context(SqlxSnafu)?;
         let pool = PoolManager::create_pool(optconn);
 
         Ok(Self {
@@ -129,11 +133,12 @@ impl Library {
     pub async fn get_root_db_folder(
         &self,
         conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Folder, sqlx::Error> {
+    ) -> Result<Folder, SqlxError> {
         let path = self.path.to_string_lossy();
         sqlx::query_as!(Folder, "SELECT * FROM `folders` WHERE path = $1", path)
             .fetch_one(conn)
             .await
+            .context(SqlxSnafu)
     }
 }
 
@@ -149,10 +154,9 @@ pub enum LibraryOpenError {
     #[snafu(display("Couldn't find a library in: {path}"))]
     LibraryNotFound { path: String, backtrace: Backtrace },
 
-    #[snafu(display("Sqlite returned an error"))]
-    SqlError {
-        source: sqlx::Error,
-        backtrace: Backtrace,
+    Sql {
+        #[snafu(backtrace)]
+        source: SqlxError,
     },
 }
 

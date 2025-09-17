@@ -1,9 +1,13 @@
 use deadpool::managed;
 use deadpool::managed::Object;
 use deadpool::managed::PoolError;
+use snafu::ResultExt as _;
 use sqlx::Connection as _;
 use sqlx::SqliteConnection;
 use sqlx::sqlite::SqliteConnectOptions;
+
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 
 #[derive(Debug)]
 pub struct PoolManager {
@@ -20,10 +24,12 @@ impl PoolManager {
 
 impl managed::Manager for PoolManager {
     type Type = sqlx::SqliteConnection;
-    type Error = sqlx::Error;
+    type Error = SqlxError;
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
-        SqliteConnection::connect_with(&self.config).await
+        SqliteConnection::connect_with(&self.config)
+            .await
+            .context(SqlxSnafu)
     }
 
     async fn recycle(
@@ -31,13 +37,13 @@ impl managed::Manager for PoolManager {
         conn: &mut Self::Type,
         _: &managed::Metrics,
     ) -> managed::RecycleResult<Self::Error> {
-        Ok(conn.ping().await?)
+        Ok(conn.ping().await.context(SqlxSnafu)?)
     }
 }
 
 /// A connection pool of raw `SqliteConnection`.
 pub type TSConnectionPool = managed::Pool<PoolManager>;
 
-pub type TSPoolError = PoolError<sqlx::Error>;
+pub type TSPoolError = PoolError<SqlxError>;
 
 pub type TSPoolResult = Result<Object<PoolManager>, TSPoolError>;
