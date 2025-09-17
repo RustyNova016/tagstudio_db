@@ -6,6 +6,7 @@ pub mod eq_any_entry_id;
 pub mod eq_any_tag_id;
 pub mod eq_entry_field;
 pub mod eq_entry_id;
+pub mod eq_entry_name;
 pub mod eq_folder;
 pub mod eq_tag_id;
 pub mod eq_tag_or_children;

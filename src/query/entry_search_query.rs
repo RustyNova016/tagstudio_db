@@ -10,6 +10,7 @@ use crate::query::eq_absolute_path::EqAbsolutePath;
 use crate::query::eq_any_entry_id::EqAnyEntryId;
 use crate::query::eq_entry_field::EqEntryField;
 use crate::query::eq_entry_id::EqEntryId;
+use crate::query::eq_entry_name::EqEntryName;
 use crate::query::eq_folder::EqEntryFolder;
 use crate::query::not::QueryNot;
 use crate::query::or::QueryOr;
@@ -20,6 +21,7 @@ use crate::query::trait_entry_filter::EntryFilter;
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum EntrySearchQuery {
     EqEntryId(EqEntryId),
+    EqEntryName(EqEntryName),
     EqAnyEntryId(EqAnyEntryId),
     EqEntryFolder(EqEntryFolder),
     EqEntryField(EqEntryField),
@@ -36,6 +38,7 @@ impl EntryFilter for EntrySearchQuery {
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         match self {
             Self::EqEntryId(val) => val.get_where_condition(bind_id),
+            Self::EqEntryName(val) => val.get_where_condition(bind_id),
             Self::EqAnyEntryId(val) => val.get_where_condition(bind_id),
             Self::EqEntryFolder(val) => val.get_where_condition(bind_id),
             Self::EqEntryField(val) => val.get_where_condition(bind_id),
@@ -50,6 +53,7 @@ impl EntryFilter for EntrySearchQuery {
     fn bind<'q, O>(&'q self, query: super::SQLQuery<'q, O>) -> super::SQLQuery<'q, O> {
         match self {
             Self::EqEntryId(val) => val.bind(query),
+            Self::EqEntryName(val) => val.bind(query),
             Self::EqAnyEntryId(val) => val.bind(query),
             Self::EqEntryFolder(val) => val.bind(query),
             Self::EqEntryField(val) => val.bind(query),
