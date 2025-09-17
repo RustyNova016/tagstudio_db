@@ -1,6 +1,10 @@
 use core::ops::Deref as _;
 
+use snafu::ResultExt;
+
 use crate::Entry;
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::query::SQLQuery;
 
 /// Trait for all the query fragments that can generate `WHERE` filter for a `SELECT` on the `entries` table
@@ -20,7 +24,7 @@ pub trait EntryFilter {
     fn fetch_all(
         &self,
         conn: &mut sqlx::SqliteConnection,
-    ) -> impl std::future::Future<Output = Result<Vec<Entry>, sqlx::Error>> + Send
+    ) -> impl std::future::Future<Output = Result<Vec<Entry>, SqlxError>> + Send
     where
         Self: Sync,
     {
@@ -29,7 +33,26 @@ pub trait EntryFilter {
                 .as_entry_select(&mut 1)
                 .unwrap_or_else(|| "SELECT * FROM `entries`".to_string());
             let query = sqlx::query_as(&sql);
-            self.bind(query).fetch_all(conn).await
+            self.bind(query).fetch_all(conn).await.context(SqlxSnafu)
+        }
+    }
+
+    fn fetch_optional(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> impl std::future::Future<Output = Result<Option<Entry>, SqlxError>> + Send
+    where
+        Self: Sync,
+    {
+        async {
+            let sql = self
+                .as_entry_select(&mut 1)
+                .unwrap_or_else(|| "SELECT * FROM `entries`".to_string());
+            let query = sqlx::query_as(&sql);
+            self.bind(query)
+                .fetch_optional(conn)
+                .await
+                .context(SqlxSnafu)
         }
     }
 }

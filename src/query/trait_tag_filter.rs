@@ -1,6 +1,10 @@
 use core::ops::Deref;
 
+use snafu::ResultExt as _;
+
 use crate::Tag;
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::query::SQLQuery;
 use crate::query::entries_with_tags::EntriesWithTags;
 use crate::query::eq_tag_or_children::EqTagOrChildren;
@@ -22,7 +26,7 @@ pub trait TagFilter {
     fn fetch_all(
         &self,
         conn: &mut sqlx::SqliteConnection,
-    ) -> impl std::future::Future<Output = Result<Vec<Tag>, sqlx::Error>> + Send
+    ) -> impl std::future::Future<Output = Result<Vec<Tag>, SqlxError>> + Send
     where
         Self: Sync,
     {
@@ -31,7 +35,26 @@ pub trait TagFilter {
                 .as_tag_select(&mut 1)
                 .unwrap_or_else(|| "SELECT * FROM `tags`".to_string());
             let query = sqlx::query_as(&sql);
-            self.bind(query).fetch_all(conn).await
+            self.bind(query).fetch_all(conn).await.context(SqlxSnafu)
+        }
+    }
+
+    fn fetch_optional(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> impl std::future::Future<Output = Result<Option<Tag>, SqlxError>> + Send
+    where
+        Self: Sync,
+    {
+        async {
+            let sql = self
+                .as_tag_select(&mut 1)
+                .unwrap_or_else(|| "SELECT * FROM `tags`".to_string());
+            let query = sqlx::query_as(&sql);
+            self.bind(query)
+                .fetch_optional(conn)
+                .await
+                .context(SqlxSnafu)
         }
     }
 

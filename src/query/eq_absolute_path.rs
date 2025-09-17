@@ -4,7 +4,7 @@ use crate::query::SQLQuery;
 use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 
-/// Filter on the entry with its full absolute path
+/// Search parameter that filter on the entry with its full absolute path
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EqAbsolutePath(pub String);
 

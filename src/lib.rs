@@ -5,10 +5,10 @@ pub mod models;
 pub mod query;
 #[cfg(feature = "test_utils")]
 pub mod tests;
-pub mod utils;
 
 pub use crate::client::conn_pool::TSPoolError;
 pub use crate::error::Error;
+pub use crate::models::errors::sqlx_error::SqlxError;
 
 // === Database ===
 pub use crate::models::alias::TagAlias;

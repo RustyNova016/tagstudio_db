@@ -4,6 +4,7 @@ use crate::query::SQLQuery;
 use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 
+/// Search parameter that filter on a specific entry id
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EqEntryId(pub i64);
 

@@ -1,4 +1,8 @@
+use snafu::ResultExt as _;
 use tracing::debug;
+
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 
 /// An alias of a tag
 pub struct TagAlias {
@@ -15,15 +19,16 @@ impl TagAlias {
         conn: &mut sqlx::SqliteConnection,
         name: &str,
         tag_id: i64,
-    ) -> Result<Vec<Self>, crate::Error> {
-        Ok(sqlx::query_as!(
+    ) -> Result<Vec<Self>, SqlxError> {
+        sqlx::query_as!(
             Self,
             "SELECT * FROM `tag_aliases` WHERE `name` = ? AND `tag_id` = ?",
             name,
             tag_id
         )
         .fetch_all(conn)
-        .await?)
+        .await
+        .context(SqlxSnafu)
     }
 
     /// Insert a new alias for a tag.
@@ -33,7 +38,7 @@ impl TagAlias {
         conn: &mut sqlx::SqliteConnection,
         name: &str,
         tag_id: i64,
-    ) -> Result<(), crate::Error> {
+    ) -> Result<(), SqlxError> {
         if name.is_empty() {
             return Ok(());
         }
@@ -46,7 +51,8 @@ impl TagAlias {
                 tag_id
             )
             .execute(conn)
-            .await?;
+            .await
+            .context(SqlxSnafu)?;
         } else {
             debug!("Ignoring alias addition {name}");
         }

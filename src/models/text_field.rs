@@ -1,4 +1,8 @@
+use snafu::ResultExt;
+
 use crate::models::entry::Entry;
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 
 pub struct TextField {
     pub value: Option<String>,
@@ -14,7 +18,7 @@ impl TextField {
         entry_id: i64,
         type_key: &str,
         value: &str,
-    ) -> Result<(), crate::Error> {
+    ) -> Result<(), SqlxError> {
         sqlx::query!(
             "INSERT INTO `text_fields` VALUES (?, NULL, ?, ?, 0)",
             value,
@@ -22,14 +26,12 @@ impl TextField {
             entry_id
         )
         .execute(conn)
-        .await?;
+        .await
+        .context(SqlxSnafu)?;
         Ok(())
     }
 
-    pub async fn get_entry(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Entry, crate::Error> {
+    pub async fn get_entry(&self, conn: &mut sqlx::SqliteConnection) -> Result<Entry, SqlxError> {
         Entry::find_by_id(conn, self.entry_id)
             .await
             .transpose()

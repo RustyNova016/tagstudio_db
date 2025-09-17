@@ -1,51 +1,42 @@
+use snafu::ResultExt as _;
 use tracing::debug;
 
+use crate::models::errors::sqlx_error::SqlxError;
+use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::tag::Tag;
+use crate::query::eq_tag_string::EqTagString;
+use crate::query::trait_tag_filter::TagFilter;
 
 impl Tag {
     /// Get the row by its id
     pub async fn find_by_id(
         conn: &mut sqlx::SqliteConnection,
         id: i64,
-    ) -> Result<Option<Self>, crate::Error> {
-        Ok(
-            sqlx::query_as!(Self, "SELECT * FROM `tags` WHERE `id` = $1", id)
-                .fetch_optional(conn)
-                .await?,
-        )
+    ) -> Result<Option<Self>, SqlxError> {
+        sqlx::query_as!(Self, "SELECT * FROM `tags` WHERE `id` = $1", id)
+            .fetch_optional(conn)
+            .await
+            .context(SqlxSnafu)
     }
 
     /// Get the tag by its exact name
     pub async fn find_by_exact_name(
         conn: &mut sqlx::SqliteConnection,
         name: &str,
-    ) -> Result<Vec<Self>, crate::Error> {
-        Ok(
-            sqlx::query_as!(Self, "SELECT * FROM `tags` WHERE `name` = $1", name)
-                .fetch_all(conn)
-                .await?,
-        )
+    ) -> Result<Vec<Self>, SqlxError> {
+        sqlx::query_as!(Self, "SELECT * FROM `tags` WHERE `name` = $1", name)
+            .fetch_all(conn)
+            .await
+            .context(SqlxSnafu)
     }
 
     /// Get all the tags that match a string. This means any tag that have the same name, shorthand, or alias
     pub async fn find_tag_by_name(
         conn: &mut sqlx::SqliteConnection,
-        name: &str,
-    ) -> Result<Vec<Tag>, crate::Error> {
+        name: String,
+    ) -> Result<Vec<Tag>, SqlxError> {
         debug!("Searching tag `{name}` by name");
 
-        Ok(sqlx::query_as!(Tag, "
-            SELECT `tags`.* 
-            FROM
-                `tags`
-                LEFT JOIN `tag_aliases` ON `tags`.`id` = `tag_aliases`.`tag_id`
-            WHERE
-                LOWER(`tags`.`name`) = LOWER($1) OR -- Try finding by name
-                LOWER(`tags`.`name`) = replace(LOWER($1), '_', ' ') OR -- Try finding by name excaped
-                LOWER(`tags`.`shorthand`) = LOWER($1) OR -- Try finding by shorthand
-                LOWER(`tags`.`shorthand`) = replace(LOWER($1), '_', ' ') OR -- Try finding by shorthand excaped
-                LOWER(`tag_aliases`.`name`) = LOWER($1) OR -- Try finding by aliased name
-                LOWER(`tag_aliases`.`name`) = replace(LOWER($1), '_', ' ') -- Try finding by aliased name excaped
-        ", name).fetch_all(conn).await?)
+        EqTagString(name).fetch_all(conn).await
     }
 }
