@@ -146,6 +146,4 @@ impl Entry {
     ) -> Result<(), SqlxError> {
         TextField::insert_text_field(conn, self.id, type_key, value).await
     }
-
-
 }
