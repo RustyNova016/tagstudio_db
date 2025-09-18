@@ -19,14 +19,9 @@ pub enum Error {
     #[error(transparent)]
     IO(#[from] io::Error),
 
-    #[error(transparent)]
-    Trash(#[from] trash::Error),
-
     #[error("Source file {0} is missing on disk")]
     MissingSourceFile(String),
 
     #[error("Couldn't move file due to another file already being present at `{0}`")]
     DestinationOccupied(PathBuf),
-
-
 }
