@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM `text_fields` WHERE entry_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "f35f425ed3fd0580652dfbe6b1cadfb475caa664fd0983b71a596395d38f02a8"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE OR IGNORE `text_fields` SET entry_id = $1 WHERE entry_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "db46782dd3dfa43a1d50c549c9a90608173bf9dca1543e739c126e3e1ae5f7b7"
+}

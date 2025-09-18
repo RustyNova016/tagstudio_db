@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE OR IGNORE `boolean_fields` SET entry_id = $1 WHERE entry_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "7038edb0339d5af17e7576b71093cece50faf6812863b1c663cf44dafe0267e2"
+}

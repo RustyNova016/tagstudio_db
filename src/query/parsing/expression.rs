@@ -79,9 +79,9 @@ where
         preceded(
             sp,
             alt((
+                parse_tag_id.map(|elem| TagSearchQuery::from(elem).into_entry_search_query()),
                 map(parse_tag_string, EntrySearchQuery::from),
                 map(parse_tag_string_escaped, EntrySearchQuery::from),
-                parse_tag_id.map(|elem| TagSearchQuery::from(elem).into_entry_search_query()),
                 map(parse_explicit_not, EntrySearchQuery::from),
             )),
         ),
