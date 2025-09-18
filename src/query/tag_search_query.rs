@@ -70,4 +70,18 @@ impl TagSearchQuery {
     pub fn or(self, other: Self) -> Self {
         Self::Or(QueryOr(self.boxed(), other.boxed()))
     }
+
+    pub fn any<T, F>(mut values: Vec<T>, mapping: F) -> Option<Self>
+    where
+        F: Fn(T) -> Self,
+    {
+        let first = values.pop()?;
+        let mut out = (mapping)(first);
+
+        for elem in values {
+            out = out.or((mapping)(elem));
+        }
+
+        Some(out)
+    }
 }
