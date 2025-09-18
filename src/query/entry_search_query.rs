@@ -88,6 +88,20 @@ impl EntrySearchQuery {
                 backtrace: Backtrace::capture(),
             })
     }
+
+    pub fn any<T, F>(mut values: Vec<T>, mapping: F) -> Option<Self>
+    where
+        F: Fn(T) -> Self,
+    {
+        let first = values.pop()?;
+        let mut out = (mapping)(first);
+
+        for elem in values {
+            out = out.or((mapping)(elem));
+        }
+
+        Some(out)
+    }
 }
 
 #[derive(Debug, Snafu)]
@@ -95,4 +109,20 @@ impl EntrySearchQuery {
 pub struct InvalidSearchString {
     pub nom_trace: String,
     backtrace: Backtrace,
+}
+
+#[cfg(test)]
+pub mod test {
+    use crate::query::entry_search_query::EntrySearchQuery;
+    use crate::query::eq_entry_id::EqEntryId;
+    use crate::tests::fixtures::assertions::assert_eq_entries;
+
+    #[tokio::test]
+    pub async fn entry_any_test() {
+        assert_eq_entries(
+            EntrySearchQuery::any(vec![0, 1, 2], |id| EqEntryId(id).into()).unwrap(),
+            vec![0, 1, 2],
+        )
+        .await;
+    }
 }
