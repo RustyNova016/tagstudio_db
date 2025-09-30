@@ -14,7 +14,6 @@ use crate::query::eq_entry_id::EqEntryId;
 use crate::query::trait_entry_filter::QueryEntryFilter;
 
 pub mod delete;
-#[cfg(feature = "fs")]
 pub mod fs;
 pub mod insert;
 pub mod relations;
