@@ -6,6 +6,7 @@ use filium::path::PathExt;
 use sequelles::table::update::UpdateSelf;
 use snafu::ResultExt;
 use sqlx::Acquire;
+use tracing::warn;
 
 use crate::Entry;
 use crate::SqlxError;

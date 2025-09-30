@@ -11,6 +11,7 @@ use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 
 pub mod conn_pool;
+pub mod db;
 
 pub struct TagStudioClient {
     pub pool: TSConnectionPool,

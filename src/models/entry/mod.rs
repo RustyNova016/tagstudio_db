@@ -6,7 +6,6 @@ use std::path::PathBuf;
 use chrono::NaiveDateTime;
 use sqlx::FromRow;
 
-#[cfg(feature = "fs")]
 pub mod fs;
 pub mod insert;
 pub mod relations;
