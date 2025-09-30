@@ -13,8 +13,8 @@ use crate::query::eq_absolute_path::EqAbsolutePath;
 use crate::query::eq_entry_id::EqEntryId;
 use crate::query::trait_entry_filter::EntryFilter;
 
+
 pub mod delete;
-#[cfg(feature = "fs")]
 pub mod fs;
 pub mod insert;
 pub mod relations;
@@ -22,7 +22,6 @@ pub mod search;
 pub mod select;
 pub mod tags;
 pub mod update;
-
 #[derive(Debug, FromRow, Clone, PartialEq, Eq)]
 pub struct Entry {
     pub id: i64,
