@@ -9,6 +9,10 @@ license = "GPL-3.0-or-later"
 keywords = ["sqlx", "database", "TagStudio", "development"]
 repository = "https://github.com/RustyNova016/tagstudio_db"
 
+exclude = [
+    "dev/*",
+]
+
 [dependencies]
 sqlx = { version = "0.8.6", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
 futures = "0.3.31"
