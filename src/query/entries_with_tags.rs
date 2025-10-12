@@ -1,4 +1,6 @@
+use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::SQLQuery;
+use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
@@ -27,6 +29,16 @@ where
 
     fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         self.0.bind(query)
+    }
+}
+
+impl<T> From<EntriesWithTags<T>> for EntrySearchQuery
+where
+    T: TagFilter,
+    TagSearchQuery: From<T>
+{
+    fn from(value: EntriesWithTags<T>) -> Self {
+        EntrySearchQuery::EntriesWithTags(EntriesWithTags(Box::new(value.0.into())))
     }
 }
 
