@@ -30,7 +30,7 @@ serde_json = "1.0.145"
 trash = {version = "5.2.3", default-features = false, optional = true}
 
 [dev-dependencies]
-tokio = { version = "1.46.1", features = ["full"] }
+tokio = { version = "1.49.0", features = ["full"] }
 
 [features]
 default = ["fs", "test_utils"]
