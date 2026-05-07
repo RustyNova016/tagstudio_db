@@ -10,19 +10,10 @@ impl Tag {
     pub async fn insert_tag(&self, conn: &mut sqlx::SqliteConnection) -> Result<Self, SqlxError> {
         debug!("Adding tag `{}`", self.name);
 
-        sqlx::query_as!(
-            Self,
-            "INSERT INTO `tags` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
-            self.name,
-            self.shorthand,
-            self.color_namespace,
-            self.color_slug,
-            self.is_hidden,
-            self.is_category,
-            self.icon,
-            self.disambiguation_id
-        )
-        .fetch_one(conn)
+        let sql;
+        sea_query::sqlx::sqlite::query_as!(
+            sql = "INSERT INTO `tags` VALUES (NULL, {self.name}, {self.shorthand}, {self.color_namespace}, {self.color_slug}, {self.is_hidden}, {self.is_category}, {self.icon}, {self.disambiguation_id}) RETURNING *;"
+        ).fetch_one(conn)
         .await
         .context(SqlxSnafu)
     }

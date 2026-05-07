@@ -1,6 +1,6 @@
-use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::SQLQuery;
 use crate::query::entry_search_query::EntrySearchQuery;
+use crate::query::tag_search_query::TagSearchQuery;
 use crate::query::trait_entry_filter::EntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
@@ -35,7 +35,7 @@ where
 impl<T> From<EntriesWithTags<T>> for EntrySearchQuery
 where
     T: TagFilter,
-    TagSearchQuery: From<T>
+    TagSearchQuery: From<T>,
 {
     fn from(value: EntriesWithTags<T>) -> Self {
         EntrySearchQuery::EntriesWithTags(EntriesWithTags(Box::new(value.0.into())))
@@ -53,7 +53,7 @@ pub mod test {
     pub async fn tag_and_test() {
         assert_eq_entries(
             EqTagOrChildren(EqTagId(1001)).into_entry_filter(),
-            vec![0, 2],
+            vec!["maxwell.png", "doge_and_maxwell.png"],
         )
         .await;
     }

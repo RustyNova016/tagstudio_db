@@ -46,7 +46,7 @@ pub mod test {
     pub async fn eq_absolute_path_test() {
         assert_eq_entries(
             EqAbsolutePath("/tmp/somwhere/far/away.png".to_string()),
-            vec![4],
+            vec!["somwhere/far/away.png"],
         )
         .await;
     }

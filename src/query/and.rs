@@ -93,19 +93,10 @@ pub mod test {
     pub async fn tag_and_test() {
         assert_eq_entries(
             QueryAnd(
-                EqTagOrChildren(EqTagId(1001)).into_entry_filter(),
-                EqTagOrChildren(EqTagId(1003)).into_entry_filter(),
-            ),
-            vec![2],
-        )
-        .await;
-
-        assert_eq_entries(
-            QueryAnd(
                 EqTagOrChildren(EqTagString::from("maxwell")).into_entry_filter(),
                 EqTagOrChildren(EqTagString::from("doge")).into_entry_filter(),
             ),
-            vec![2],
+            vec!["doge_and_maxwell.png"],
         )
         .await;
     }

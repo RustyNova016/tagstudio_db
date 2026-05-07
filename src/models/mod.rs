@@ -1,9 +1,12 @@
-pub mod alias;
+pub mod boolean_field;
+pub mod datetime_field;
 pub mod entry;
 pub mod errors;
 pub mod folder;
 pub mod library;
 pub mod library_path;
 pub mod tag;
+pub mod tag_alias;
 pub mod tag_entry;
+pub mod tag_parent;
 pub mod text_field;

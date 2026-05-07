@@ -13,17 +13,16 @@ impl Entry {
         let folder = path.folder_path_as_string();
         let relative = path.relative_path_as_string();
 
-        sqlx::query_as!(
-            Self,
-            "
+        let sql;
+        sea_query::sqlx::sqlite::query_as!(
+            sql = "
             SELECT `entries`.* 
             FROM `entries`
                 INNER JOIN `folders` ON `folders`.`id` = entries.folder_id
-            WHERE `folders`.`path` = ? AND `entries`.`path` = ?",
-            folder,
-            relative
+            WHERE `folders`.`path` = {folder} AND `entries`.`path` = {relative}
+        "
         )
-        .fetch_all(conn)
+        .fetch_all(&mut *conn)
         .await
         .context(SqlxSnafu)
     }

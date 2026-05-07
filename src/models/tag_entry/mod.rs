@@ -4,6 +4,9 @@ use tracing::debug;
 use crate::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 
+pub mod delete;
+pub mod update;
+
 pub struct TagEntry {
     pub tag_id: i64,
     pub entry_id: i64,

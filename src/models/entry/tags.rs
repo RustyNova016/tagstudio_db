@@ -105,43 +105,6 @@ impl Entry {
         Ok(!search.fetch_all(conn).await?.is_empty())
     }
 
-    /// Get the tags of the entry
-    pub async fn get_tags(&self, conn: &mut sqlx::SqliteConnection) -> Result<Vec<Tag>, SqlxError> {
-        sqlx::query_as!(
-            Tag,
-            "SELECT `tags`.* 
-            FROM `entries` 
-                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`
-                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`
-            WHERE
-                `entries`.`id` = ?",
-            self.id
-        )
-        .fetch_all(conn)
-        .await
-        .context(SqlxSnafu)
-    }
-
-    /// Get the tags of the entry and its parents
-    pub async fn get_tags_and_parents(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Vec<Tag>, SqlxError> {
-        sqlx::query_as!(
-            Tag,
-            "SELECT `tags`.* 
-            FROM `entries` 
-                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`
-                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`
-            WHERE
-                `entries`.`id` = ?",
-            self.id
-        )
-        .fetch_all(conn)
-        .await
-        .context(SqlxSnafu)
-    }
-
     /// Add an existing tag with this name or insert a new one and add it to the entry
     pub async fn add_tag_string_or_insert(
         &self,

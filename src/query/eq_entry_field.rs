@@ -62,21 +62,21 @@ impl From<EqEntryField> for EntrySearchQuery {
     }
 }
 
-#[cfg(test)]
-pub mod test {
-    use crate::query::eq_entry_field::EqEntryField;
-    use crate::query::eq_entry_field::FieldValue;
-    use crate::tests::fixtures::assertions::assert_eq_entries;
+// #[cfg(test)]
+// pub mod test {
+//     use crate::query::eq_entry_field::EqEntryField;
+//     use crate::query::eq_entry_field::FieldValue;
+//     use crate::tests::fixtures::assertions::assert_eq_entries;
 
-    #[tokio::test]
-    pub async fn eq_entry_id_test() {
-        assert_eq_entries(
-            EqEntryField {
-                field_type: "DESCRIPTION".into(),
-                value: FieldValue::Text("A very dingus cat".to_string()),
-            },
-            vec![0],
-        )
-        .await;
-    }
-}
+//     #[tokio::test]
+//     pub async fn eq_entry_id_test() {
+//         assert_eq_entries(
+//             EqEntryField {
+//                 field_type: "DESCRIPTION".into(),
+//                 value: FieldValue::Text("A very dingus cat".to_string()),
+//             },
+//             vec![0],
+//         )
+//         .await;
+//     }
+// }

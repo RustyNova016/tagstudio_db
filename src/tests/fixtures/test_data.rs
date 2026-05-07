@@ -1,17 +1,4 @@
-use crate::models::library::Library;
-use crate::tests::fixtures::raw_library::get_empty_library;
-pub async fn get_test_library() -> Library {
-    let lib = get_empty_library().await;
-
-    sqlx::query(DB102_TEST_DATA)
-        .execute(&mut *lib.db.get().await.unwrap())
-        .await
-        .unwrap();
-
-    lib
-}
-
-pub const DB102_TEST_DATA: &str = r#"
+pub const DB_TEST_DATA: &str = r#"
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 INSERT INTO folders VALUES(0,'/tmp','uuid');

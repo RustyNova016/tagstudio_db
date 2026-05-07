@@ -3,7 +3,7 @@ use crate::models::library::Library;
 pub async fn get_empty_library() -> Library {
     let lib = Library::in_memory().unwrap();
 
-    sqlx::query(DB101_SCHEMA)
+    sqlx::query(DB_SCHEMA)
         .execute(&mut *lib.db.get().await.unwrap())
         .await
         .unwrap();
@@ -11,7 +11,7 @@ pub async fn get_empty_library() -> Library {
     lib
 }
 
-pub const DB101_SCHEMA: &str = r#"
+pub const DB_SCHEMA: &str = r#"
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE namespaces (
@@ -193,6 +193,7 @@ CREATE TABLE tags (
 	color_namespace VARCHAR, 
 	color_slug VARCHAR, 
 	is_category BOOLEAN NOT NULL, 
+	is_hidden BOOLEAN NOT NULL,
 	icon VARCHAR, 
 	disambiguation_id INTEGER, 
 	FOREIGN KEY(color_namespace, color_slug) REFERENCES tag_colors (namespace, slug)

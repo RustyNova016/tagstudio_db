@@ -1,13 +1,10 @@
-use std::backtrace::Backtrace;
 use std::fs::rename;
 use std::path::Path;
 use std::path::PathBuf;
 
 use snafu::ResultExt as _;
-use snafu::Snafu;
 use sqlx::Acquire;
 
-use crate::SqlxError;
 use crate::models::entry::Entry;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::library_path::LibraryPath;
@@ -76,14 +73,6 @@ impl Entry {
         let prev_path = self.get_global_path(conn).await?;
 
         let mut trans = conn.begin().await.context(SqlxSnafu)?;
-        sqlx::query!(
-            "UPDATE `entries` SET `path` = ? WHERE `id` = ?",
-            new_lib_path,
-            self.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)?;
 
         let root_path = self.get_folder(&mut trans).await?.path;
         let mut path = PathBuf::from(root_path);
@@ -94,6 +83,7 @@ impl Entry {
         }
 
         self.path = new_lib_path.to_string();
+        self.update(&mut *trans).await?;
 
         trans.commit().await.context(SqlxSnafu)?;
         Ok(())

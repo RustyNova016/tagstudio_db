@@ -33,6 +33,6 @@ pub mod test {
 
     #[tokio::test]
     pub async fn eq_entry_name_test() {
-        assert_eq_entries(EqEntryName("maxwell.png".to_string()), vec![1]).await;
+        assert_eq_entries(EqEntryName("maxwell.png".to_string()), vec!["maxwell.png"]).await;
     }
 }

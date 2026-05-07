@@ -6,7 +6,11 @@ use sqlx::Acquire;
 
 use crate::Entry;
 use crate::SqlxError;
+use crate::TextField;
+use crate::models::boolean_field::BooleanField;
+use crate::models::datetime_field::DatetimeField;
 use crate::models::errors::sqlx_error::SqlxSnafu;
+use crate::models::tag_entry::TagEntry;
 
 impl Entry {
     /// Merge another entry into self
@@ -17,72 +21,21 @@ impl Entry {
     ) -> Result<(), MergeEntryError> {
         let mut trans = conn.begin().await.context(SqlxSnafu).context(SqlSnafu)?;
 
-        let other_path = other.get_global_path(&mut trans).await.context(SqlSnafu)?;
+        TagEntry::replace_entry(&mut *trans, self.id, other.id)
+            .await
+            .context(SqlSnafu)?;
+        TextField::replace_entry(&mut *trans, self.id, other.id)
+            .await
+            .context(SqlSnafu)?;
+        BooleanField::replace_entry(&mut *trans, self.id, other.id)
+            .await
+            .context(SqlSnafu)?;
+        DatetimeField::replace_entry(&mut *trans, self.id, other.id)
+            .await
+            .context(SqlSnafu)?;
 
-        sqlx::query!(
-            "UPDATE OR IGNORE `tag_entries` SET entry_id = $1 WHERE entry_id = $2",
-            self.id,
-            other.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)
-        .context(SqlSnafu)?;
-        sqlx::query!(
-            "UPDATE OR IGNORE `boolean_fields` SET entry_id = $1 WHERE entry_id = $2",
-            self.id,
-            other.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)
-        .context(SqlSnafu)?;
-        sqlx::query!(
-            "UPDATE OR IGNORE `datetime_fields` SET entry_id = $1 WHERE entry_id = $2",
-            self.id,
-            other.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)
-        .context(SqlSnafu)?;
-        sqlx::query!(
-            "UPDATE OR IGNORE `text_fields` SET entry_id = $1 WHERE entry_id = $2",
-            self.id,
-            other.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)
-        .context(SqlSnafu)?;
-        sqlx::query!("DELETE FROM `tag_entries` WHERE entry_id = $1", other.id)
-            .execute(&mut *trans)
-            .await
-            .context(SqlxSnafu)
-            .context(SqlSnafu)?;
-        sqlx::query!("DELETE FROM `boolean_fields` WHERE entry_id = $1", other.id)
-            .execute(&mut *trans)
-            .await
-            .context(SqlxSnafu)
-            .context(SqlSnafu)?;
-        sqlx::query!(
-            "DELETE FROM `datetime_fields` WHERE entry_id = $1",
-            other.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)
-        .context(SqlSnafu)?;
-        sqlx::query!("DELETE FROM `text_fields` WHERE entry_id = $1", other.id)
-            .execute(&mut *trans)
-            .await
-            .context(SqlxSnafu)
-            .context(SqlSnafu)?;
-        sqlx::query!("DELETE FROM `entries` WHERE id = $1", other.id)
-            .execute(&mut *trans)
-            .await
-            .context(SqlxSnafu)
-            .context(SqlSnafu)?;
+        let other_path = other.get_global_path(&mut trans).await.context(SqlSnafu)?;
+        other.delete(&mut *trans).await.context(SqlSnafu)?;
 
         if other_path.exists() {
             trash::delete(other_path).context(TrashSnafu)?;
@@ -104,6 +57,4 @@ pub enum MergeEntryError {
         source: trash::Error,
         backtrace: Backtrace,
     },
-
-
 }

@@ -125,7 +125,7 @@ pub mod test {
     pub async fn entry_any_test() {
         assert_eq_entries(
             EntrySearchQuery::any(vec![0, 1, 2], |id| EqEntryId(id).into()).unwrap(),
-            vec![0, 1, 2],
+            vec!["maxwell.png", "doge.png", "doge_and_maxwell.png"],
         )
         .await;
     }

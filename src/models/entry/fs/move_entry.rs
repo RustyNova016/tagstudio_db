@@ -1,5 +1,4 @@
 use std::io;
-use std::path::PathBuf;
 
 use filium::path::PathExt;
 use snafu::ResultExt;
@@ -46,18 +45,8 @@ impl Entry {
         }
 
         // No entry. Let's start the move
-        // Update the path
         let new_relatve_path = new_path.relative_path.to_string_lossy().to_string();
-        sqlx::query!(
-            "UPDATE `entries` SET `path` = ? WHERE `id` = ?",
-            new_relatve_path,
-            self.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)
-        .context(DatabaseSnafu)?;
-    
+
         // Let's move the file, and overwrite if there's the same hash. This allows for non entry files to be merged in case of a manual copy.
         // Since the file is the same, and there's no database entry about it, this means that there's no data lost (Maybe just Reflinks on BTRFS but shhh)
         if !prev_path
@@ -71,6 +60,7 @@ impl Entry {
 
         // We have moved! Now let's update `self` and commit the changes to the database
         self.path = new_relatve_path;
+        self.update(&mut trans).await.context(DatabaseSnafu)?;
 
         trans
             .commit()

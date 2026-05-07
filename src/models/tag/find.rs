@@ -13,7 +13,8 @@ impl Tag {
         conn: &mut sqlx::SqliteConnection,
         id: i64,
     ) -> Result<Option<Self>, SqlxError> {
-        sqlx::query_as!(Self, "SELECT * FROM `tags` WHERE `id` = $1", id)
+        let sql;
+        sea_query::sqlx::sqlite::query_as!(sql = "SELECT * FROM `tags` WHERE `id` = {id}")
             .fetch_optional(conn)
             .await
             .context(SqlxSnafu)
@@ -24,7 +25,8 @@ impl Tag {
         conn: &mut sqlx::SqliteConnection,
         name: &str,
     ) -> Result<Vec<Self>, SqlxError> {
-        sqlx::query_as!(Self, "SELECT * FROM `tags` WHERE `name` = $1", name)
+        let sql;
+        sea_query::sqlx::sqlite::query_as!(sql = "SELECT * FROM `tags` WHERE `name` = {name}")
             .fetch_all(conn)
             .await
             .context(SqlxSnafu)

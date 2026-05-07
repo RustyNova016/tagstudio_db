@@ -81,7 +81,7 @@ pub mod test {
                 EqTagOrChildren(EqTagString::from("maxwell")).into_entry_filter(),
                 EqTagOrChildren(EqTagString::from("doge")).into_entry_filter(),
             ),
-            vec![0, 1, 2],
+            vec!["maxwell.png", "doge.png", "doge_and_maxwell.png"],
         )
         .await;
     }
