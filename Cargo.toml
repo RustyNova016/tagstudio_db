@@ -9,10 +9,6 @@ license = "GPL-3.0-or-later"
 keywords = ["sqlx", "database", "TagStudio", "development"]
 repository = "https://github.com/RustyNova016/tagstudio_db"
 
-exclude = [
-    "dev/*",
-]
-
 [dependencies]
 sqlx = { version = "0.8.6", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
 futures = "0.3.31"
@@ -27,13 +23,26 @@ snafu = "0.8.9"
 #nom-supreme = "0.8.0" <- Needs updating to nom 0.8.0
 itertools = "0.14.0"
 serde_json = "1.0.145"
+
+
+# Filesystem
 trash = {version = "5.2.3", default-features = false, optional = true}
+filium = {version = "0.1.0"}
+
+# Debug
+hotpath = { version = "0.14.1", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1.46.1", features = ["full"] }
+
+[patch.crates-io]
+filium = { git = "https://codeberg.org/RustyNova016/filium.git", rev = "4396402d9a0885f44717737c987c9b290c14d2f9" }
 
 [features]
 default = ["fs", "test_utils"]
 fs = ["trash"]
 test_utils = []
 
+backtrace = []
+hotpath = ["dep:hotpath", "hotpath/hotpath"]
+hotpath-alloc = ["hotpath/hotpath-alloc"]

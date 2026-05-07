@@ -17,6 +17,7 @@ use crate::query::trait_entry_filter::EntryFilter as _;
 use crate::query::trait_tag_filter::TagFilter as _;
 
 pub mod find;
+pub mod relation;
 
 #[derive(Debug, FromRow, Clone)]
 pub struct Tag {
@@ -25,6 +26,7 @@ pub struct Tag {
     pub shorthand: Option<String>,
     pub color_namespace: Option<String>,
     pub color_slug: Option<String>,
+    pub is_hidden: bool,
     pub is_category: bool,
     pub icon: Option<String>,
     pub disambiguation_id: Option<i64>,
@@ -287,6 +289,7 @@ impl<T: Display> From<T> for Tag {
             is_category: false,
             name: value.to_string(),
             shorthand: None,
+            is_hidden: false,
         }
     }
 }

@@ -12,11 +12,12 @@ impl Tag {
 
         sqlx::query_as!(
             Self,
-            "INSERT INTO `tags` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
+            "INSERT INTO `tags` VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;",
             self.name,
             self.shorthand,
             self.color_namespace,
             self.color_slug,
+            self.is_hidden,
             self.is_category,
             self.icon,
             self.disambiguation_id

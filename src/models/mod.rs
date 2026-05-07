@@ -3,5 +3,7 @@ pub mod entry;
 pub mod errors;
 pub mod folder;
 pub mod library;
+pub mod library_path;
 pub mod tag;
+pub mod tag_entry;
 pub mod text_field;
