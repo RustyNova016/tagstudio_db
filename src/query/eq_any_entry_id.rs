@@ -42,7 +42,7 @@ pub mod test {
     #[tokio::test]
     pub async fn eq_entry_id_test() {
         assert_eq_entries(
-            EqAnyEntryId(vec![2, 4]),
+            EqAnyEntryId(vec![3, 5]),
             vec!["doge_and_maxwell.png", "somwhere/far/away.png"],
         )
         .await;

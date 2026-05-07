@@ -13,9 +13,9 @@ impl Tag {
     pub async fn delete(self, conn: &mut sqlx::SqliteConnection) -> Result<(), SqlxError> {
         let mut trans = conn.begin().await.context(SqlxSnafu)?;
 
-        TagAlias::delete_by_tag_id(&mut *trans, self.id).await?;
-        TagEntry::delete_by_tag_id(&mut *trans, self.id).await?;
-        TagParent::delete_by_tag_id(&mut *trans, self.id).await?;
+        TagAlias::delete_by_tag_id(&mut trans, self.id).await?;
+        TagEntry::delete_by_tag_id(&mut trans, self.id).await?;
+        TagParent::delete_by_tag_id(&mut trans, self.id).await?;
 
         let sql;
         sea_query::sqlx::sqlite::query!(sql = "DELETE FROM `tags` WHERE `id` = {self.id}")

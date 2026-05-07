@@ -1,6 +1,5 @@
 use itertools::Itertools as _;
 
-use crate::Entry;
 use crate::query::trait_entry_filter::EntryFilter;
 use crate::tests::fixtures::data::get_test_library;
 
@@ -21,23 +20,23 @@ where
         .await
         .unwrap();
 
-    let mut result_ids = results.into_iter().map(|entr| entr.id).collect_vec();
-    result_ids.sort();
+    let mut result_paths = results.into_iter().map(|entr| entr.path).collect_vec();
+    result_paths.sort();
     expected.sort();
 
-    // Fetch the expected results
-    let conn = &mut lib.db.get().await.unwrap();
-    let mut expected_ids = Vec::new();
-    for expected in expected {
-        let entry = Entry::find_by_path(conn, &expected)
-            .await
-            .unwrap()
-            .first()
-            .cloned()
-            .unwrap();
+    // // Fetch the expected results
+    // let conn = &mut lib.db.get().await.unwrap();
+    // let mut expected_ids = Vec::new();
+    // for expected in expected {
+    //     let entry = Entry::find_by_path(conn, &expected)
+    //         .await
+    //         .unwrap()
+    //         .first()
+    //         .cloned()
+    //         .unwrap();
 
-        expected_ids.push(entry.id);
-    }
+    //     expected_ids.push(entry.id);
+    // }
 
-    assert_eq!(result_ids, expected_ids);
+    assert_eq!(result_paths, expected);
 }

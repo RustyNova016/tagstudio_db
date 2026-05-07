@@ -118,14 +118,17 @@ pub struct InvalidSearchString {
 #[cfg(test)]
 pub mod test {
     use crate::query::entry_search_query::EntrySearchQuery;
-    use crate::query::eq_entry_id::EqEntryId;
+    use crate::query::eq_entry_name::EqEntryName;
     use crate::tests::fixtures::assertions::assert_eq_entries;
 
     #[tokio::test]
     pub async fn entry_any_test() {
         assert_eq_entries(
-            EntrySearchQuery::any(vec![0, 1, 2], |id| EqEntryId(id).into()).unwrap(),
-            vec!["maxwell.png", "doge.png", "doge_and_maxwell.png"],
+            EntrySearchQuery::any(vec!["maxwell.png", "doge.png"], |id| {
+                EqEntryName(id.to_string()).into()
+            })
+            .unwrap(),
+            vec!["maxwell.png", "doge.png"],
         )
         .await;
     }

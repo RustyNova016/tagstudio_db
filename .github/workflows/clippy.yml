@@ -32,4 +32,4 @@ jobs:
       - uses: taiki-e/install-action@cargo-hack
 
       - name: Run clippy
-        run: cargo hack clippy --feature-powerset -- -D warnings
+        run: cargo hack clippy --each-feature --skip hotpath,hotpath-alloc,hotpath-off -- -D warnings

@@ -20,7 +20,7 @@ pub async fn get_test_library() -> Library {
         path: "/tmp".to_string(),
         uuid: "uuid".to_string(),
     }
-    .insert(&mut *lib.db.get().await.unwrap())
+    .insert(&mut lib.db.get().await.unwrap())
     .await
     .unwrap();
 

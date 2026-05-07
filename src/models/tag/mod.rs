@@ -47,7 +47,7 @@ impl Tag {
         }
 
         self.name = new_name.to_string();
-        self.update(&mut *trans).await?;
+        self.update(&mut trans).await?;
 
         trans.commit().await.context(SqlxSnafu)?;
         Ok(())

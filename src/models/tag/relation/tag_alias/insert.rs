@@ -25,6 +25,6 @@ impl Tag {
         }
         .insert(conn)
         .await
-        .map(|a| Some(a))
+        .map(Some)
     }
 }

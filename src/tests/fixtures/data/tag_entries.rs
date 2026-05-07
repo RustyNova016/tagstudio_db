@@ -13,7 +13,7 @@ pub(super) async fn add_test_tag_entries(lib: &Library) {
 async fn add_tag_entry(lib: &Library, entry: &str, tag: &str) {
     let conn = &mut *lib.db.get().await.unwrap();
 
-    let entry = Entry::find_by_path(conn, &entry)
+    let entry = Entry::find_by_path(conn, entry)
         .await
         .unwrap()
         .first()

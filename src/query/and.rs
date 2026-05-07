@@ -83,7 +83,6 @@ where
 #[cfg(test)]
 pub mod test {
     use crate::query::and::QueryAnd;
-    use crate::query::eq_tag_id::EqTagId;
     use crate::query::eq_tag_or_children::EqTagOrChildren;
     use crate::query::eq_tag_string::EqTagString;
     use crate::query::trait_tag_filter::TagFilter;

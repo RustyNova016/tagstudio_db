@@ -44,16 +44,16 @@ where
 
 #[cfg(test)]
 pub mod test {
-    use crate::query::eq_tag_id::EqTagId;
     use crate::query::eq_tag_or_children::EqTagOrChildren;
+    use crate::query::eq_tag_string::EqTagString;
     use crate::query::trait_tag_filter::TagFilter;
     use crate::tests::fixtures::assertions::assert_eq_entries;
 
     #[tokio::test]
     pub async fn tag_and_test() {
         assert_eq_entries(
-            EqTagOrChildren(EqTagId(1001)).into_entry_filter(),
-            vec!["maxwell.png", "doge_and_maxwell.png"],
+            EqTagOrChildren(EqTagString("Cat".to_string())).into_entry_filter(),
+            vec!["maxwell.png", "doge_and_maxwell.png", "OIIA.png"],
         )
         .await;
     }

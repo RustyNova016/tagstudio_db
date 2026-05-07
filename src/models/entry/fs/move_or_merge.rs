@@ -15,7 +15,7 @@ impl Entry {
     ) -> Result<(), MoveOrMergeSameError> {
         match self.move_entry(conn, new_path).await {
             // It worked!
-            Ok(_) => return Ok(()),
+            Ok(_) => Ok(()),
 
             // Already had an entry? Let's merge it
             Err(MoveEntryError::EntryPresent { mut other_entries }) => {

@@ -83,7 +83,7 @@ impl Entry {
         }
 
         self.path = new_lib_path.to_string();
-        self.update(&mut *trans).await?;
+        self.update(&mut trans).await?;
 
         trans.commit().await.context(SqlxSnafu)?;
         Ok(())

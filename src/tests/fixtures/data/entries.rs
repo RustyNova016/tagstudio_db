@@ -14,13 +14,13 @@ async fn add_entry(lib: &Library, name: &str) {
         date_added: None,
         date_created: None,
         date_modified: None,
-        filename: name.split('/').last().unwrap().to_string(),
-        folder_id: 0,
+        filename: name.split('/').next_back().unwrap().to_string(),
+        folder_id: 1,
         id: 0,
         path: name.to_string(),
-        suffix: name.split('.').last().unwrap().to_string(),
+        suffix: name.split('.').next_back().unwrap().to_string(),
     }
-    .insert(&mut *lib.db.get().await.unwrap())
+    .insert(&mut lib.db.get().await.unwrap())
     .await
     .unwrap();
 }

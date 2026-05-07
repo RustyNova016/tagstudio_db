@@ -3,7 +3,7 @@ name = "tagstudio_db"
 description = "Rust bindings for TagStudio databases"
 version = "0.4.0"
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.88.0"
 authors = ["RustyNova"]
 license = "GPL-3.0-or-later"
 keywords = ["sqlx", "database", "TagStudio", "development"]
@@ -30,7 +30,7 @@ sea-query = {version = "=1.0.0-rc.33", features = ["sqlx-utils"]}
 
 
 # Filesystem
-trash = {version = "5.2.3", default-features = false, optional = true}
+trash = {version = "5.2.5", default-features = false, optional = true}
 filium = { git = "https://codeberg.org/RustyNova016/filium.git", rev = "4396402d9a0885f44717737c987c9b290c14d2f9" }
 
 # Debug

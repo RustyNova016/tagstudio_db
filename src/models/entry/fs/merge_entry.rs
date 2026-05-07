@@ -21,21 +21,21 @@ impl Entry {
     ) -> Result<(), MergeEntryError> {
         let mut trans = conn.begin().await.context(SqlxSnafu).context(SqlSnafu)?;
 
-        TagEntry::replace_entry(&mut *trans, self.id, other.id)
+        TagEntry::replace_entry(&mut trans, self.id, other.id)
             .await
             .context(SqlSnafu)?;
-        TextField::replace_entry(&mut *trans, self.id, other.id)
+        TextField::replace_entry(&mut trans, self.id, other.id)
             .await
             .context(SqlSnafu)?;
-        BooleanField::replace_entry(&mut *trans, self.id, other.id)
+        BooleanField::replace_entry(&mut trans, self.id, other.id)
             .await
             .context(SqlSnafu)?;
-        DatetimeField::replace_entry(&mut *trans, self.id, other.id)
+        DatetimeField::replace_entry(&mut trans, self.id, other.id)
             .await
             .context(SqlSnafu)?;
 
         let other_path = other.get_global_path(&mut trans).await.context(SqlSnafu)?;
-        other.delete(&mut *trans).await.context(SqlSnafu)?;
+        other.delete(&mut trans).await.context(SqlSnafu)?;
 
         if other_path.exists() {
             trash::delete(other_path).context(TrashSnafu)?;

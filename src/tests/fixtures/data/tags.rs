@@ -12,7 +12,7 @@ pub(super) async fn add_test_tags(lib: &Library) {
 
 async fn add_tag(lib: &Library, name: &str) {
     Tag::from(name)
-        .insert_tag(&mut *lib.db.get().await.unwrap())
+        .insert_tag(&mut lib.db.get().await.unwrap())
         .await
         .unwrap();
 }
