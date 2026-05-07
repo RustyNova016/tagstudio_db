@@ -28,18 +28,18 @@ impl Library {
     pub async fn try_open_library(path: PathBuf) -> Result<Self, LibraryTryOpenError> {
         let lib = Self::open_library(path).context(OpenSnafu)?;
 
-        let res = sqlx::query_scalar!("SELECT VALUE FROM `versions` WHERE `key` = 'CURRENT'")
+        let res = sqlx::query_scalar("SELECT VALUE FROM `versions` WHERE `key` = 'CURRENT'")
             .fetch_one(&mut *lib.db.get().await.context(SqlPoolSnafu)?)
             .await;
 
         let version = res.unwrap_or(100);
 
-        if version >= 101 && version % 100 == 1 {
+        if version >= 103 && version % 100 == 1 {
             Ok(lib)
         } else {
             Err(LibraryTryOpenError::IncompatibleVersion {
                 lib_version: version,
-                allowed_version: 101,
+                allowed_version: 103,
                 backtrace: Backtrace::capture(),
             })
         }
@@ -133,12 +133,9 @@ impl Library {
     pub async fn get_root_db_folder(
         &self,
         conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Folder, SqlxError> {
+    ) -> Result<Option<Folder>, SqlxError> {
         let path = self.path.to_string_lossy();
-        sqlx::query_as!(Folder, "SELECT * FROM `folders` WHERE path = $1", path)
-            .fetch_one(conn)
-            .await
-            .context(SqlxSnafu)
+        Folder::find_by_path(conn, &path).await
     }
 }
 

@@ -1,11 +1,11 @@
 use snafu::ResultExt;
 use sqlx::Acquire;
-use tracing::debug;
 
 use crate::Entry;
 use crate::Tag;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
+use crate::models::tag_entry::TagEntry;
 use crate::query::and::QueryAnd;
 use crate::query::eq_entry_id::EqEntryId;
 use crate::query::eq_tag_string::EqTagString;
@@ -19,17 +19,12 @@ impl Entry {
         conn: &mut sqlx::SqliteConnection,
         tag_id: i64,
     ) -> Result<(), SqlxError> {
-        debug!("Adding tag {tag_id} to entry {}", self.id);
-
-        sqlx::query!(
-            "INSERT OR IGNORE INTO `tag_entries`(entry_id, tag_id) VALUES (?, ?)",
-            self.id,
-            tag_id
-        )
-        .execute(conn)
+        TagEntry {
+            entry_id: self.id,
+            tag_id,
+        }
+        .insert(conn)
         .await
-        .context(SqlxSnafu)?;
-        Ok(())
     }
 
     /// Add a tag to the entry
@@ -38,7 +33,12 @@ impl Entry {
         conn: &mut sqlx::SqliteConnection,
         tag: &Tag,
     ) -> Result<(), SqlxError> {
-        self.add_tag_id(conn, tag.id).await
+        TagEntry {
+            entry_id: self.id,
+            tag_id: tag.id,
+        }
+        .insert(conn)
+        .await
     }
 
     /// Add multiple tags to the entry using their ids
@@ -103,43 +103,6 @@ impl Entry {
         );
 
         Ok(!search.fetch_all(conn).await?.is_empty())
-    }
-
-    /// Get the tags of the entry
-    pub async fn get_tags(&self, conn: &mut sqlx::SqliteConnection) -> Result<Vec<Tag>, SqlxError> {
-        sqlx::query_as!(
-            Tag,
-            "SELECT `tags`.* 
-            FROM `entries` 
-                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`
-                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`
-            WHERE
-                `entries`.`id` = ?",
-            self.id
-        )
-        .fetch_all(conn)
-        .await
-        .context(SqlxSnafu)
-    }
-
-    /// Get the tags of the entry and its parents
-    pub async fn get_tags_and_parents(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Vec<Tag>, SqlxError> {
-        sqlx::query_as!(
-            Tag,
-            "SELECT `tags`.* 
-            FROM `entries` 
-                INNER JOIN `tag_entries` ON `tag_entries`.`entry_id` = `entries`.`id`
-                INNER JOIN `tags` ON `tag_entries`.`tag_id` = `tags`.`id`
-            WHERE
-                `entries`.`id` = ?",
-            self.id
-        )
-        .fetch_all(conn)
-        .await
-        .context(SqlxSnafu)
     }
 
     /// Add an existing tag with this name or insert a new one and add it to the entry

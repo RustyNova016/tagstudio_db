@@ -1,22 +1,21 @@
-pub mod insert;
 use core::fmt::Display;
 
-use futures::StreamExt as _;
-use futures::stream::BoxStream;
 use snafu::ResultExt as _;
 use sqlx::Acquire;
 use sqlx::FromRow;
 use streamies::TryStreamies as _;
-use tracing::debug;
 
-use crate::models::alias::TagAlias;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::query::eq_tag_id::EqTagId;
 use crate::query::trait_entry_filter::EntryFilter as _;
 use crate::query::trait_tag_filter::TagFilter as _;
 
+pub mod delete;
 pub mod find;
+pub mod insert;
+pub mod relation;
+pub mod update;
 
 #[derive(Debug, FromRow, Clone)]
 pub struct Tag {
@@ -25,6 +24,7 @@ pub struct Tag {
     pub shorthand: Option<String>,
     pub color_namespace: Option<String>,
     pub color_slug: Option<String>,
+    pub is_hidden: bool,
     pub is_category: bool,
     pub icon: Option<String>,
     pub disambiguation_id: Option<i64>,
@@ -46,18 +46,10 @@ impl Tag {
             self.add_alias(&mut trans, new_name).await?;
         }
 
-        sqlx::query!(
-            "UPDATE `tags` SET name = $name WHERE id = $id",
-            new_name,
-            self.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)?;
+        self.name = new_name.to_string();
+        self.update(&mut trans).await?;
 
         trans.commit().await.context(SqlxSnafu)?;
-
-        self.name = new_name.to_string();
         Ok(())
     }
 
@@ -103,177 +95,6 @@ impl Tag {
         trans.commit().await.context(SqlxSnafu)?;
         Ok(())
     }
-
-    pub fn get_aliases<'l>(
-        &'l self,
-        conn: &'l mut sqlx::SqliteConnection,
-    ) -> BoxStream<'l, Result<TagAlias, SqlxError>> {
-        sqlx::query_as!(
-            TagAlias,
-            "
-            SELECT `tag_aliases`.* 
-            FROM `tags` 
-                INNER JOIN `tag_aliases` ON `tag_aliases`.`tag_id` = `tags`.`id`
-            WHERE `tags`.`id` = $1",
-            self.id
-        )
-        .fetch(conn)
-        .map(|val| val.context(SqlxSnafu))
-        .boxed()
-    }
-
-    pub fn get_parents<'l>(
-        &'l self,
-        conn: &'l mut sqlx::SqliteConnection,
-    ) -> BoxStream<'l, Result<Tag, SqlxError>> {
-        sqlx::query_as!(
-            Tag,
-            "
-            SELECT `tags`.* 
-            FROM `tags` 
-                INNER JOIN `tag_parents` ON `tag_parents`.`parent_id` = `tags`.`id`
-            WHERE `tag_parents`.`child_id` = $1",
-            self.id
-        )
-        .fetch(conn)
-        .map(|val| val.context(SqlxSnafu))
-        .boxed()
-    }
-
-    pub fn get_children<'l>(
-        &'l self,
-        conn: &'l mut sqlx::SqliteConnection,
-    ) -> BoxStream<'l, Result<Tag, SqlxError>> {
-        sqlx::query_as!(
-            Tag,
-            "
-            SELECT `tags`.* 
-            FROM `tags` 
-                INNER JOIN `tag_parents` ON `tag_parents`.`child_id` = `tags`.`id`
-            WHERE `tag_parents`.`parent_id` = $1",
-            self.id
-        )
-        .fetch(conn)
-        .map(|val| val.context(SqlxSnafu))
-        .boxed()
-    }
-
-    /// Add an alias to this tag.
-    ///
-    /// This doesn't duplicate aliases, and prevent adding an alias identical to the name
-    pub async fn add_alias(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        name: &str,
-    ) -> Result<(), SqlxError> {
-        if self.name == name {
-            debug!("Ignoring alias addition {name}");
-            return Ok(());
-        }
-
-        TagAlias::insert_tag_alias(conn, name, self.id).await
-    }
-
-    pub async fn add_parent(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        parent_id: i64,
-    ) -> Result<(), SqlxError> {
-        debug!(
-            "Adding parent `{parent_id}` to tag `{}` ({})",
-            self.name, self.id
-        );
-
-        sqlx::query!(
-            "INSERT OR IGNORE INTO `tag_parents`(parent_id, child_id) VALUES (?, ?)",
-            parent_id,
-            self.id,
-        )
-        .execute(conn)
-        .await
-        .context(SqlxSnafu)?;
-        Ok(())
-    }
-
-    pub async fn add_parents(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        tags: &Vec<Tag>,
-    ) -> Result<(), SqlxError> {
-        let mut trans = conn.begin().await.context(SqlxSnafu)?;
-
-        for tag in tags {
-            self.add_parent(&mut trans, tag.id).await?;
-        }
-
-        trans.commit().await.context(SqlxSnafu)?;
-
-        Ok(())
-    }
-
-    pub async fn add_child(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        child_id: i64,
-    ) -> Result<(), SqlxError> {
-        debug!(
-            "Adding child `{child_id}` to tag `{}` ({})",
-            self.name, self.id
-        );
-
-        sqlx::query!(
-            "INSERT OR IGNORE INTO `tag_parents`(parent_id, child_id) VALUES (?, ?)",
-            self.id,
-            child_id,
-        )
-        .execute(conn)
-        .await
-        .context(SqlxSnafu)?;
-        Ok(())
-    }
-
-    pub async fn add_children(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        tags: &Vec<Tag>,
-    ) -> Result<(), SqlxError> {
-        let mut trans = conn.begin().await.context(SqlxSnafu)?;
-
-        for tag in tags {
-            self.add_child(&mut trans, tag.id).await?;
-        }
-
-        trans.commit().await.context(SqlxSnafu)?;
-
-        Ok(())
-    }
-
-    pub async fn delete(self, conn: &mut sqlx::SqliteConnection) -> Result<(), SqlxError> {
-        let mut trans = conn.begin().await.context(SqlxSnafu)?;
-
-        sqlx::query!("DELETE FROM `tag_aliases` WHERE `tag_id` = $1", self.id)
-            .execute(&mut *trans)
-            .await
-            .context(SqlxSnafu)?;
-        sqlx::query!("DELETE FROM `tag_entries` WHERE `tag_id` = $1", self.id)
-            .execute(&mut *trans)
-            .await
-            .context(SqlxSnafu)?;
-        sqlx::query!(
-            "DELETE FROM `tag_parents` WHERE `parent_id` = $1 OR `child_id` = $1",
-            self.id
-        )
-        .execute(&mut *trans)
-        .await
-        .context(SqlxSnafu)?;
-        sqlx::query!("DELETE FROM `tags` WHERE `id` = $1", self.id)
-            .execute(&mut *trans)
-            .await
-            .context(SqlxSnafu)?;
-
-        trans.commit().await.context(SqlxSnafu)?;
-        Ok(())
-    }
 }
 
 impl<T: Display> From<T> for Tag {
@@ -287,6 +108,7 @@ impl<T: Display> From<T> for Tag {
             is_category: false,
             name: value.to_string(),
             shorthand: None,
+            is_hidden: false,
         }
     }
 }

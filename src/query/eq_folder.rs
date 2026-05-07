@@ -35,6 +35,10 @@ pub mod test {
 
     #[tokio::test]
     pub async fn eq_entry_id_test() {
-        assert_eq_entries(EqEntryFolder("somwhere/far/".to_string()), vec![4]).await;
+        assert_eq_entries(
+            EqEntryFolder("somwhere/far/".to_string()),
+            vec!["somwhere/far/away.png"],
+        )
+        .await;
     }
 }

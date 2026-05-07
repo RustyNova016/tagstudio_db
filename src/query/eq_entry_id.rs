@@ -34,6 +34,6 @@ pub mod test {
 
     #[tokio::test]
     pub async fn eq_entry_id_test() {
-        assert_eq_entries(EqEntryId(2), vec![2]).await;
+        assert_eq_entries(EqEntryId(3), vec!["doge_and_maxwell.png"]).await;
     }
 }
