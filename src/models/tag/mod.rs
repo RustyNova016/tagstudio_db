@@ -17,7 +17,7 @@ pub mod insert;
 pub mod relation;
 pub mod update;
 
-#[derive(Debug, FromRow, Clone)]
+#[derive(Debug, FromRow, Clone, PartialEq, Eq)]
 pub struct Tag {
     pub id: i64,
     pub name: String,
@@ -34,20 +34,23 @@ impl Tag {
     /// Rename the current tag. If not disabled, the old name will be added as an alias
     ///
     /// `self` is not mutated unless the result is `Ok`. So it's safe to use, even after getting an `Err`
-    pub async fn rename(
+    pub async fn rename<T: Display>(
         &mut self,
         conn: &mut sqlx::SqliteConnection,
-        new_name: &str,
+        new_name: T,
         no_aliasing: bool,
     ) -> Result<(), SqlxError> {
         let mut trans = conn.begin().await.context(SqlxSnafu)?;
 
-        if !no_aliasing {
-            self.add_alias(&mut trans, new_name).await?;
-        }
+        let old_name = self.name.to_string();
+        let new_name = new_name.to_string();
 
-        self.name = new_name.to_string();
+        self.name = new_name;
         self.update(&mut trans).await?;
+
+        if !no_aliasing {
+            self.add_alias(&mut trans, &old_name).await?;
+        }
 
         trans.commit().await.context(SqlxSnafu)?;
         Ok(())
@@ -117,6 +120,7 @@ impl<T: Display> From<T> for Tag {
 mod tests {
     use futures::TryStreamExt;
 
+    use crate::tests::fixtures::data::get_test_library;
     use crate::tests::fixtures::raw_library::get_empty_library;
 
     use super::*;
@@ -183,6 +187,43 @@ mod tests {
                 .try_any(async |tag| tag.name == "Feline")
                 .await
                 .unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn should_rename() {
+        let lib = get_test_library().await;
+        let conn = &mut lib.db.get().await.unwrap();
+
+        let mut cat_tag = Tag::find_by_name(conn, "Cat".to_string())
+            .await
+            .unwrap()
+            .pop()
+            .unwrap();
+        cat_tag.rename(conn, "Neko", false).await.unwrap();
+
+        assert!(
+            Tag::find_by_exact_name(conn, "Cat")
+                .await
+                .unwrap()
+                .pop()
+                .is_none()
+        );
+
+        assert!(
+            Tag::find_by_exact_name(conn, "Neko")
+                .await
+                .unwrap()
+                .pop()
+                .is_some()
+        );
+
+        assert!(
+            Tag::find_by_name(conn, "Cat".to_string())
+                .await
+                .unwrap()
+                .pop()
+                .is_some()
         );
     }
 }

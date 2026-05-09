@@ -18,6 +18,7 @@ impl Entry {
                 `date_created` = {self.date_created},
                 `date_modified` = {self.date_modified},
                 `date_added` = {self.date_added}
+            WHERE `id` = {self.id}
         "
         )
         .execute(&mut *conn)

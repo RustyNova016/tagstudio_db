@@ -1,10 +1,10 @@
 use snafu::ResultExt;
 
 use crate::SqlxError;
-use crate::Tag;
+use crate::TagAlias;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 
-impl Tag {
+impl TagAlias {
     /// Fetch the alias by its name and tag.
     ///
     /// ⚠️ Returns a vec as an alias's uniqueness isn't enforced

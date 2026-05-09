@@ -23,7 +23,7 @@ impl Tag {
         conn: &mut sqlx::SqliteConnection,
         name: String,
     ) -> Result<Vec<Self>, SqlxError> {
-        let tags = Self::find_tag_by_name(conn, name.clone()).await?;
+        let tags = Self::find_by_name(conn, name.clone()).await?;
 
         if !tags.is_empty() {
             return Ok(tags);

@@ -28,3 +28,30 @@ impl Tag {
         .map(Some)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::Tag;
+    use crate::TagAlias;
+    use crate::tests::fixtures::data::get_test_library;
+
+    #[tokio::test]
+    async fn should_add_alias_to_tag() {
+        let lib = get_test_library().await;
+        let conn = &mut lib.db.get().await.unwrap();
+        let cat_tag = Tag::find_by_exact_name(conn, "Cat")
+            .await
+            .unwrap()
+            .pop()
+            .unwrap();
+
+        cat_tag.add_alias(conn, "Meowers").await.unwrap();
+
+        let mut aliases = TagAlias::find_by_name(conn, "Meowers", cat_tag.id)
+            .await
+            .unwrap();
+        assert_eq!(aliases.len(), 1);
+        let alias = aliases.pop().unwrap();
+        assert_eq!(&alias.name, "Meowers");
+    }
+}
