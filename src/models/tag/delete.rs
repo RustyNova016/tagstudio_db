@@ -27,3 +27,29 @@ impl Tag {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::Tag;
+    use crate::tests::fixtures::data::get_test_library;
+
+    #[tokio::test]
+    async fn should_delete_tag() {
+        let lib = get_test_library().await;
+        let conn = &mut lib.db.get().await.unwrap();
+        let cat_tag = Tag::find_by_exact_name(conn, "Cat")
+            .await
+            .unwrap()
+            .pop()
+            .unwrap();
+
+        assert_eq!(&cat_tag.name, "Cat");
+
+        cat_tag.delete(conn).await.unwrap();
+
+        assert_eq!(
+            None,
+            Tag::find_by_exact_name(conn, "Cat").await.unwrap().pop()
+        );
+    }
+}
