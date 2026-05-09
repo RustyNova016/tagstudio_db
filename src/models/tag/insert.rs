@@ -2,25 +2,28 @@ use snafu::ResultExt;
 use tracing::debug;
 
 use crate::Tag;
+use crate::client::db::traits::write_conn::WriteConnection;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 
 impl Tag {
     /// Insert a new tag in the database
-    pub async fn insert_tag(&self, conn: &mut sqlx::SqliteConnection) -> Result<Self, SqlxError> {
+    #[cfg_attr(feature = "hotpath", hotpath::future_fn(log = true))]
+    pub async fn insert_tag(&self, conn: &mut impl WriteConnection) -> Result<Self, SqlxError> {
         debug!("Adding tag `{}`", self.name);
 
         let sql;
         sea_query::sqlx::sqlite::query_as!(
             sql = "INSERT INTO `tags` VALUES (NULL, {self.name}, {self.shorthand}, {self.color_namespace}, {self.color_slug}, {self.is_hidden}, {self.is_category}, {self.icon}, {self.disambiguation_id}) RETURNING *;"
-        ).fetch_one(conn)
+        ).fetch_one(conn.conn())
         .await
         .context(SqlxSnafu)
     }
 
     /// Search a tag by its name or aliases, and if not found, insert it
+    #[cfg_attr(feature = "hotpath", hotpath::future_fn(log = true))]
     pub async fn get_by_name_or_insert_new(
-        conn: &mut sqlx::SqliteConnection,
+        conn: &mut impl WriteConnection,
         name: String,
     ) -> Result<Vec<Self>, SqlxError> {
         let tags = Self::find_by_name(conn, name.clone()).await?;

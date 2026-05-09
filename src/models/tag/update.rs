@@ -2,10 +2,12 @@ use snafu::ResultExt;
 
 use crate::SqlxError;
 use crate::Tag;
+use crate::client::db::traits::write_conn::WriteConnection;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 
 impl Tag {
-    pub async fn update(&self, conn: &mut sqlx::SqliteConnection) -> Result<(), SqlxError> {
+    #[cfg_attr(feature = "hotpath", hotpath::future_fn(log = true))]
+    pub async fn update(&self, conn: &mut impl WriteConnection) -> Result<(), SqlxError> {
         let sql;
         sea_query::sqlx::sqlite::query!(
             sql = "
@@ -21,14 +23,13 @@ impl Tag {
             WHERE `id` = {self.id}
         "
         )
-        .execute(&mut *conn)
+        .execute(conn.conn())
         .await
         .context(SqlxSnafu)?;
 
         Ok(())
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -39,7 +40,7 @@ mod test {
     async fn should_update_tag() {
         let lib = get_test_library().await;
         let conn = &mut lib.db.get().await.unwrap();
-        let mut  cat_tag = Tag::find_by_exact_name(conn, "Cat")
+        let mut cat_tag = Tag::find_by_exact_name(conn, "Cat")
             .await
             .unwrap()
             .pop()

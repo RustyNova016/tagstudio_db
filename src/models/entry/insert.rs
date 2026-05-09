@@ -2,11 +2,12 @@ use snafu::ResultExt as _;
 use tracing::debug;
 
 use crate::Entry;
+use crate::client::db::traits::write_conn::WriteConnection;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 
 impl Entry {
-    pub async fn insert(&self, conn: &mut sqlx::SqliteConnection) -> Result<Self, SqlxError> {
+    pub async fn insert(&self, conn: &mut impl WriteConnection) -> Result<Self, SqlxError> {
         debug!("Adding entry `{}`", self.path);
 
         let sql;
@@ -21,7 +22,7 @@ impl Entry {
                 {self.date_added}
             ) RETURNING *;"
         )
-        .fetch_one(conn)
+        .fetch_one(conn.conn())
         .await
         .context(SqlxSnafu)
     }
