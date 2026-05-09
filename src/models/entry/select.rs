@@ -4,6 +4,7 @@ use futures::Stream;
 use snafu::ResultExt as _;
 
 use crate::Entry;
+use crate::client::db::traits::read_conn::ReadConnection;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::library_path::LibraryPath;
@@ -71,9 +72,9 @@ impl Entry {
     }
 
     pub async fn find_by_library_path(
-        conn: &mut sqlx::SqliteConnection,
+        conn: &mut impl ReadConnection,
         path: &LibraryPath,
-    ) -> Result<Vec<Self>, SqlxError> {
+    ) -> Result<Option<Self>, SqlxError> {
         let folder = path.folder_path_as_string();
         let relative = path.relative_path_as_string();
 
@@ -86,9 +87,8 @@ impl Entry {
             WHERE `folders`.`path` = {folder} AND `entries`.`path` = {relative}
         "
         )
-        .fetch_all(&mut *conn)
+        .fetch_optional(conn.conn())
         .await
         .context(SqlxSnafu)
     }
 }
-

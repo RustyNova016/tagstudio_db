@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 /// Represent a path in the library
+#[derive(Debug, Clone)]
 pub struct LibraryPath {
     pub folder_path: PathBuf,
     pub relative_path: PathBuf,

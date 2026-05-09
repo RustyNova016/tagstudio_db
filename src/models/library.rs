@@ -12,15 +12,16 @@ use tracing::debug;
 
 use crate::TSPoolError;
 use crate::client::conn_pool::PoolManager;
-use crate::client::conn_pool::TSConnectionPool;
+use crate::client::db::DatabasePooler;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::folder::Folder;
 
 /// A struct representing a TagStudio library.
+#[derive(Debug)]
 pub struct Library {
     pub path: PathBuf,
-    pub db: TSConnectionPool,
+    pub db: DatabasePooler,
 }
 
 impl Library {
@@ -65,7 +66,7 @@ impl Library {
 
         Ok(Self {
             path: root,
-            db: pool,
+            db: DatabasePooler::new(pool),
         })
     }
 
@@ -82,7 +83,7 @@ impl Library {
 
         Ok(Self {
             path: root,
-            db: pool,
+            db: DatabasePooler::new(pool),
         })
     }
 
@@ -125,7 +126,7 @@ impl Library {
 
         Ok(Self {
             path: "".into(),
-            db: pool,
+            db: DatabasePooler::new(pool),
         })
     }
 

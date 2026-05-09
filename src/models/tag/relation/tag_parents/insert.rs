@@ -13,7 +13,7 @@ impl Tag {
         &self,
         conn: &mut sqlx::SqliteConnection,
         child_id: i64,
-    ) -> Result<TagParent, SqlxError> {
+    ) -> Result<Option<TagParent>, SqlxError> {
         debug!(
             "Adding child `{child_id}` to tag `{}` ({})",
             self.name, self.id
@@ -47,7 +47,7 @@ impl Tag {
         &self,
         conn: &mut sqlx::SqliteConnection,
         parent_id: i64,
-    ) -> Result<TagParent, SqlxError> {
+    ) -> Result<Option<TagParent>, SqlxError> {
         debug!(
             "Adding parent `{parent_id}` to tag `{}` ({})",
             self.name, self.id
