@@ -25,7 +25,7 @@ itertools = "0.14.0"
 serde_json = "1.0.145"
 
 # database
-sqlx = { version = "0.8.6", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
+sqlx = { version = "0.9.0", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
 sea-query = {version = "=1.0.0-rc.33", features = ["sqlx-utils"]}
 
 
