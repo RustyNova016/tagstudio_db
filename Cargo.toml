@@ -3,7 +3,7 @@ name = "tagstudio_db"
 description = "Rust bindings for TagStudio databases"
 version = "0.4.0"
 edition = "2024"
-rust-version = "1.88.0"
+rust-version = "1.94.0"
 authors = ["RustyNova"]
 license = "GPL-3.0-or-later"
 keywords = ["sqlx", "database", "TagStudio", "development"]
@@ -12,7 +12,7 @@ repository = "https://github.com/RustyNova016/tagstudio_db"
 [dependencies]
 
 futures = "0.3.31"
-thiserror = "2.0.12"
+thiserror = "2.0.18"
 chrono = "0.4.41"
 deadpool = "0.13.0"
 tracing = "0.1.41"
@@ -25,9 +25,8 @@ itertools = "0.14.0"
 serde_json = "1.0.145"
 
 # database
-sqlx = { version = "0.8.6", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
-sea-query = {version = "=1.0.0-rc.33", features = ["sqlx-utils"]}
-
+sqlx = { version = "0.9.0", default-features = false, features = [ "runtime-tokio", "sqlite", "derive", "macros", "chrono"] }
+sea-query = {version = "1.0.0", features = ["sqlx-utils"]}
 
 # Filesystem
 trash = {version = "5.2.5", default-features = false, optional = true}
@@ -35,7 +34,6 @@ filium = { git = "https://codeberg.org/RustyNova016/filium.git", rev = "4396402d
 
 # Debug
 hotpath = { version = "0.15.0", optional = true }
-
 
 [dev-dependencies]
 tokio = { version = "1.46.1", features = ["full"] }
