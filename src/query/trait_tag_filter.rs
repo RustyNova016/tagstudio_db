@@ -1,6 +1,7 @@
 use core::ops::Deref;
 
 use snafu::ResultExt as _;
+use sqlx::AssertSqlSafe;
 
 use crate::Tag;
 use crate::models::errors::sqlx_error::SqlxError;
@@ -34,7 +35,7 @@ pub trait TagFilter {
             let sql = self
                 .as_tag_select(&mut 1)
                 .unwrap_or_else(|| "SELECT * FROM `tags`".to_string());
-            let query = sqlx::query_as(&sql);
+            let query = sqlx::query_as(AssertSqlSafe(sql));
             self.bind(query).fetch_all(conn).await.context(SqlxSnafu)
         }
     }
@@ -50,7 +51,7 @@ pub trait TagFilter {
             let sql = self
                 .as_tag_select(&mut 1)
                 .unwrap_or_else(|| "SELECT * FROM `tags`".to_string());
-            let query = sqlx::query_as(&sql);
+            let query = sqlx::query_as(AssertSqlSafe(sql));
             self.bind(query)
                 .fetch_optional(conn)
                 .await

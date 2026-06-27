@@ -1,6 +1,7 @@
 use core::ops::Deref as _;
 
 use snafu::ResultExt;
+use sqlx::AssertSqlSafe;
 
 use crate::Entry;
 use crate::models::errors::sqlx_error::SqlxError;
@@ -32,7 +33,7 @@ pub trait EntryFilter {
             let sql = self
                 .as_entry_select(&mut 1)
                 .unwrap_or_else(|| "SELECT * FROM `entries`".to_string());
-            let query = sqlx::query_as(&sql);
+            let query = sqlx::query_as(AssertSqlSafe(sql));
             self.bind(query).fetch_all(conn).await.context(SqlxSnafu)
         }
     }
@@ -48,7 +49,7 @@ pub trait EntryFilter {
             let sql = self
                 .as_entry_select(&mut 1)
                 .unwrap_or_else(|| "SELECT * FROM `entries`".to_string());
-            let query = sqlx::query_as(&sql);
+            let query = sqlx::query_as(AssertSqlSafe(sql));
             self.bind(query)
                 .fetch_optional(conn)
                 .await

@@ -23,4 +23,4 @@ use sqlx::Sqlite;
 use sqlx::query::QueryAs;
 use sqlx::sqlite::SqliteArguments;
 
-pub type SQLQuery<'q, O> = QueryAs<'q, Sqlite, O, SqliteArguments<'q>>;
+pub type SQLQuery<'q, O> = QueryAs<'q, Sqlite, O, SqliteArguments>;
