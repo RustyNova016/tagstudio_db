@@ -1,11 +1,13 @@
 use std::io;
 
 use filium::path::PathExt;
+use sequelles::table::update::UpdateSelf;
 use snafu::ResultExt;
 use sqlx::Acquire;
 
 use crate::Entry;
 use crate::SqlxError;
+use crate::models::entry::EntrySqlError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::library_path::LibraryPath;
 
@@ -60,7 +62,7 @@ impl Entry {
 
         // We have moved! Now let's update `self` and commit the changes to the database
         self.path = new_relatve_path;
-        self.update(&mut trans).await.context(DatabaseSnafu)?;
+        self.update_self(&mut trans).await.context(EntrySqlSnafu)?;
 
         trans
             .commit()
@@ -80,6 +82,10 @@ pub enum MoveEntryError {
 
     DatabaseError {
         source: SqlxError,
+    },
+
+    EntrySqlError {
+        source: EntrySqlError,
     },
 
     MoveError {

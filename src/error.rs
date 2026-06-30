@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 use thiserror::Error;
 
+use crate::models::entry::EntrySqlError;
 use crate::models::errors::sqlx_error::SqlxError;
 
 #[derive(Debug, Error)]
@@ -24,4 +25,7 @@ pub enum Error {
 
     #[error("Couldn't move file due to another file already being present at `{0}`")]
     DestinationOccupied(PathBuf),
+
+    #[error(transparent)]
+    EntrySqlError(#[from] EntrySqlError),
 }

@@ -21,9 +21,12 @@ pub mod relations;
 pub mod search;
 pub mod select;
 pub mod tags;
-pub mod update;
 
-#[derive(Debug, FromRow, Clone, PartialEq, Eq)]
+#[derive(Debug, FromRow, Clone, PartialEq, Eq, sequelles::Table)]
+#[sequelles(db_name = "entries", snafu)]
+#[sequelles(sqlite)]
+#[sequelles(update)]
+#[sequelles(primary_key(key_name = "pk", columns(id)))]
 pub struct Entry {
     pub id: i64,
     pub folder_id: i64,
