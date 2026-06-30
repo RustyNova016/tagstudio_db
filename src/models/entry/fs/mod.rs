@@ -2,6 +2,7 @@ use std::fs::rename;
 use std::path::Path;
 use std::path::PathBuf;
 
+use sequelles::table::update::UpdateSelf;
 use snafu::ResultExt as _;
 use sqlx::Acquire;
 
@@ -83,7 +84,7 @@ impl Entry {
         }
 
         self.path = new_lib_path.to_string();
-        self.update(&mut trans).await?;
+        self.update_self(&mut trans).await?;
 
         trans.commit().await.context(SqlxSnafu)?;
         Ok(())
