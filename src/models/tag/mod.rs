@@ -8,7 +8,7 @@ use streamies::TryStreamies as _;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::query::eq_tag_id::EqTagId;
-use crate::query::trait_entry_filter::EntryFilter as _;
+use crate::query::trait_entry_filter::QueryEntryFilter as _;
 use crate::query::trait_tag_filter::TagFilter as _;
 
 pub mod delete;
@@ -24,8 +24,8 @@ pub struct Tag {
     pub shorthand: Option<String>,
     pub color_namespace: Option<String>,
     pub color_slug: Option<String>,
-    pub is_hidden: bool,
     pub is_category: bool,
+    pub is_hidden: bool,
     pub icon: Option<String>,
     pub disambiguation_id: Option<i64>,
 }

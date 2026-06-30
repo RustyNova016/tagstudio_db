@@ -1,11 +1,11 @@
 use itertools::Itertools as _;
 
-use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_entry_filter::QueryEntryFilter;
 use crate::tests::fixtures::data::get_test_library;
 
 pub async fn assert_eq_entries<T>(query: T, mut expected: Vec<&str>)
 where
-    T: EntryFilter + Sync,
+    T: QueryEntryFilter + Sync,
 {
     let lib = get_test_library().await;
 

@@ -16,7 +16,7 @@ use crate::query::not::QueryNot;
 use crate::query::or::QueryOr;
 use crate::query::parse_expression;
 use crate::query::tag_search_query::TagSearchQuery;
-use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_entry_filter::QueryEntryFilter;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum EntrySearchQuery {
@@ -34,7 +34,7 @@ pub enum EntrySearchQuery {
     Or(QueryOr<Box<EntrySearchQuery>, Box<EntrySearchQuery>>),
 }
 
-impl EntryFilter for EntrySearchQuery {
+impl QueryEntryFilter for EntrySearchQuery {
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         match self {
             Self::EqEntryId(val) => val.get_where_condition(bind_id),

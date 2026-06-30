@@ -1,7 +1,7 @@
 use crate::query::SQLQuery;
 use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::tag_search_query::TagSearchQuery;
-use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_entry_filter::QueryEntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
 /// Merge two filters with an `and` condition
@@ -32,10 +32,10 @@ where
     }
 }
 
-impl<T, U> EntryFilter for QueryAnd<T, U>
+impl<T, U> QueryEntryFilter for QueryAnd<T, U>
 where
-    T: EntryFilter,
-    U: EntryFilter,
+    T: QueryEntryFilter,
+    U: QueryEntryFilter,
 {
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         let q_a = self.0.get_where_condition(bind_id);

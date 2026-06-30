@@ -9,7 +9,7 @@ use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::query::SQLQuery;
 
 /// Trait for all the query fragments that can generate `WHERE` filter for a `SELECT` on the `entries` table
-pub trait EntryFilter {
+pub trait QueryEntryFilter {
     /// Transform the query into a condition that can be used in a `where`, with the table `entries` declared
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String>;
 
@@ -58,9 +58,9 @@ pub trait EntryFilter {
     }
 }
 
-impl<T> EntryFilter for Box<T>
+impl<T> QueryEntryFilter for Box<T>
 where
-    T: EntryFilter,
+    T: QueryEntryFilter,
 {
     fn bind<'q, O>(&'q self, query: SQLQuery<'q, O>) -> SQLQuery<'q, O> {
         self.deref().bind(query)

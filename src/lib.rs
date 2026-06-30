@@ -18,6 +18,5 @@ pub use crate::models::tag::Tag;
 pub use crate::models::tag_alias::TagAlias;
 pub use crate::models::text_field::TextField;
 
-pub mod sqlx {
-    pub use sqlx::*;
-}
+pub use sequelles;
+pub use sqlx;

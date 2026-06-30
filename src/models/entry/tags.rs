@@ -9,7 +9,7 @@ use crate::models::tag_entry::TagEntry;
 use crate::query::and::QueryAnd;
 use crate::query::eq_entry_id::EqEntryId;
 use crate::query::eq_tag_string::EqTagString;
-use crate::query::trait_entry_filter::EntryFilter as _;
+use crate::query::trait_entry_filter::QueryEntryFilter as _;
 use crate::query::trait_tag_filter::TagFilter as _;
 
 impl Entry {

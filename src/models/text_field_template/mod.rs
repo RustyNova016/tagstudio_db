@@ -1,16 +1,13 @@
 use sequelles::sqlx::FromRow;
 
-pub mod update;
-
 #[derive(Debug, FromRow, Clone, PartialEq, Eq, sequelles::Table)]
-#[sequelles(db_name = "datetime_field", snafu)]
+#[sequelles(db_name = "text_field_templates", snafu)]
 #[sequelles(sqlite)]
 #[sequelles(update, insert_struct, select)]
 #[sequelles(primary_key(key_name = "pk", columns(id)))]
-pub struct DatetimeField {
+pub struct TextFieldTemplate {
     #[sequelles(auto_increment)]
     pub id: i64,
     pub name: String,
-    pub entry_id: i64,
-    pub value: Option<String>,
+    pub is_multiline: bool,
 }

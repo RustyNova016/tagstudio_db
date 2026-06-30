@@ -1,16 +1,16 @@
 use crate::query::SQLQuery;
 use crate::query::entry_search_query::EntrySearchQuery;
 use crate::query::tag_search_query::TagSearchQuery;
-use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_entry_filter::QueryEntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
-/// Turn a [`TagFilter`] into a [`EntryFilter`] by filtering all the entries that have the specific tags
+/// Turn a [`TagFilter`] into a [`QueryEntryFilter`] by filtering all the entries that have the specific tags
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct EntriesWithTags<T>(pub T)
 where
     T: TagFilter;
 
-impl<T> EntryFilter for EntriesWithTags<T>
+impl<T> QueryEntryFilter for EntriesWithTags<T>
 where
     T: TagFilter,
 {

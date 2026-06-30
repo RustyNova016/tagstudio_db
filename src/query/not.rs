@@ -1,6 +1,6 @@
 use crate::query::SQLQuery;
 use crate::query::tag_search_query::TagSearchQuery;
-use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_entry_filter::QueryEntryFilter;
 use crate::query::trait_tag_filter::TagFilter;
 
 /// Negate the condition
@@ -22,9 +22,9 @@ where
     }
 }
 
-impl<T> EntryFilter for QueryNot<T>
+impl<T> QueryEntryFilter for QueryNot<T>
 where
-    T: EntryFilter,
+    T: QueryEntryFilter,
 {
     fn get_where_condition(&self, bind_id: &mut u64) -> Option<String> {
         self.0
