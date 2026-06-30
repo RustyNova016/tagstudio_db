@@ -3,17 +3,21 @@ use sqlx::prelude::FromRow;
 use crate::models::entry::Entry;
 use crate::models::errors::sqlx_error::SqlxError;
 
-pub mod insert;
 pub mod select;
 pub mod update;
 
-#[derive(Debug, FromRow, Clone, PartialEq, Eq)]
+#[derive(Debug, FromRow, Clone, PartialEq, Eq, sequelles::Table)]
+#[sequelles(db_name = "text_field", snafu)]
+#[sequelles(sqlite)]
+#[sequelles(update, insert_struct, select, delete)]
+#[sequelles(primary_key(key_name = "pk", columns(id)))]
 pub struct TextField {
-    pub value: Option<String>,
+    #[sequelles(auto_increment)]
     pub id: i64,
-    pub type_key: String,
+    pub name: String,
     pub entry_id: i64,
-    pub position: i64,
+    pub value: Option<String>,
+    pub is_multiline: bool,
 }
 
 impl TextField {

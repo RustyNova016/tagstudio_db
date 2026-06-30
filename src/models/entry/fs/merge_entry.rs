@@ -7,7 +7,6 @@ use sqlx::Acquire;
 use crate::Entry;
 use crate::SqlxError;
 use crate::TextField;
-use crate::models::boolean_field::BooleanField;
 use crate::models::datetime_field::DatetimeField;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::tag_entry::TagEntry;
@@ -25,9 +24,6 @@ impl Entry {
             .await
             .context(SqlSnafu)?;
         TextField::replace_entry(&mut trans, self.id, other.id)
-            .await
-            .context(SqlSnafu)?;
-        BooleanField::replace_entry(&mut trans, self.id, other.id)
             .await
             .context(SqlSnafu)?;
         DatetimeField::replace_entry(&mut trans, self.id, other.id)

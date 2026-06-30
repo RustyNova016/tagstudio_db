@@ -11,7 +11,7 @@ use crate::models::folder::Folder;
 use crate::models::library_path::LibraryPath;
 use crate::query::eq_absolute_path::EqAbsolutePath;
 use crate::query::eq_entry_id::EqEntryId;
-use crate::query::trait_entry_filter::EntryFilter;
+use crate::query::trait_entry_filter::QueryEntryFilter;
 
 pub mod delete;
 #[cfg(feature = "fs")]
@@ -25,9 +25,11 @@ pub mod tags;
 #[derive(Debug, FromRow, Clone, PartialEq, Eq, sequelles::Table)]
 #[sequelles(db_name = "entries", snafu)]
 #[sequelles(sqlite)]
-#[sequelles(update)]
+#[sequelles(update, select_unique, delete, insert_struct, upsert)]
 #[sequelles(primary_key(key_name = "pk", columns(id)))]
+#[sequelles(unique_key(key_name = "path", columns(path)))]
 pub struct Entry {
+    #[sequelles(auto_increment)]
     pub id: i64,
     pub folder_id: i64,
     pub path: String,
