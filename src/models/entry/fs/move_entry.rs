@@ -42,7 +42,7 @@ impl Entry {
         let other_entries = Self::find_by_library_path(&mut trans, new_path)
             .await
             .context(DatabaseSnafu)?;
-        if !other_entries.is_empty() {
+        if other_entries.is_some() {
             return EntryPresentSnafu { other_entries }.fail();
         }
 
@@ -77,7 +77,7 @@ impl Entry {
 pub enum MoveEntryError {
     /// There is already an entry at the target location
     EntryPresent {
-        other_entries: Vec<Entry>,
+        other_entries: Option<Entry>,
     },
 
     DatabaseError {

@@ -18,12 +18,8 @@ impl Entry {
             Ok(_) => Ok(()),
 
             // Already had an entry? Let's merge it
-            Err(MoveEntryError::EntryPresent { mut other_entries }) => {
-                if other_entries.len() > 1 {
-                    return MultipleTargetEntriesSnafu { other_entries }.fail();
-                }
-
-                let Some(other) = other_entries.pop() else {
+            Err(MoveEntryError::EntryPresent { other_entries }) => {
+                let Some(other) = other_entries else {
                     return Ok(());
                 };
 

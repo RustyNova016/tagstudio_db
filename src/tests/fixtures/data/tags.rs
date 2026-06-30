@@ -8,6 +8,7 @@ pub(super) async fn add_test_tags(lib: &Library) {
     add_tag(lib, "Doge").await;
     add_tag(lib, "Dog").await;
     add_tag(lib, "OIIA").await;
+    add_tag(lib, "Animal").await;
 }
 
 async fn add_tag(lib: &Library, name: &str) {

@@ -1,6 +1,5 @@
 use core::str::FromStr;
 use std::ffi::OsString;
-use std::path::Path;
 use std::path::PathBuf;
 
 use chrono::NaiveDateTime;
@@ -14,11 +13,9 @@ use crate::query::eq_entry_id::EqEntryId;
 use crate::query::trait_entry_filter::QueryEntryFilter;
 
 pub mod delete;
-#[cfg(feature = "fs")]
 pub mod fs;
 pub mod insert;
 pub mod relations;
-pub mod search;
 pub mod select;
 pub mod tags;
 
@@ -41,24 +38,6 @@ pub struct Entry {
 }
 
 impl Entry {
-    /// Get the row by its id
-    pub async fn find_by_id(
-        conn: &mut sqlx::SqliteConnection,
-        id: i64,
-    ) -> Result<Option<Self>, SqlxError> {
-        EqEntryId(id).fetch_optional(conn).await
-    }
-
-    /// Get the entry by its cannon path (Aka, the library's root path + the file's path in the library)
-    pub async fn find_by_cannon_path(
-        conn: &mut sqlx::SqliteConnection,
-        path: &Path,
-    ) -> Result<Vec<Self>, SqlxError> {
-        EqAbsolutePath(path.to_string_lossy().to_string())
-            .fetch_all(conn)
-            .await
-    }
-
     pub async fn get_folder(&self, conn: &mut sqlx::SqliteConnection) -> Result<Folder, SqlxError> {
         Folder::find_by_id(conn, self.folder_id)
             .await
