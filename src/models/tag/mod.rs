@@ -7,11 +7,15 @@ use streamies::TryStreamies as _;
 
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
+use crate::models::tag::error::TagError;
+use crate::models::tag::error::TagSQLxSnafu;
+use crate::models::tag::error::TransactionSnafu;
 use crate::query::eq_tag_id::EqTagId;
 use crate::query::trait_entry_filter::QueryEntryFilter as _;
 use crate::query::trait_tag_filter::TagFilter as _;
 
 pub mod delete;
+pub mod error;
 pub mod find;
 pub mod insert;
 pub mod relation;
@@ -58,41 +62,58 @@ impl Tag {
         &self,
         conn: &mut sqlx::SqliteConnection,
         other: Self,
-    ) -> Result<(), SqlxError> {
-        let mut trans = conn.begin().await.context(SqlxSnafu)?;
+    ) -> Result<(), TagError> {
+        let mut trans = conn.begin().await.context(TransactionSnafu)?;
 
         // Add the new tag to the entries with the old tag
         let entries = EqTagId(other.id)
             .into_entry_filter()
             .fetch_all(&mut trans)
-            .await?;
+            .await
+            .context(TagSQLxSnafu)?;
         for entry in entries {
-            entry.add_tag_id(&mut trans, self.id).await?;
+            entry
+                .add_tag_id(&mut trans, self.id)
+                .await
+                .context(TagSQLxSnafu)?;
         }
 
         // Merge the tag data
-        self.add_alias(&mut trans, &other.name).await?;
+        self.add_alias(&mut trans, &other.name)
+            .await
+            .context(TagSQLxSnafu)?;
         self.add_alias(&mut trans, &other.shorthand.clone().unwrap_or_default())
-            .await?;
+            .await
+            .context(TagSQLxSnafu)?;
 
-        let aliases = other.get_aliases(&mut trans).try_collect_vec().await?;
+        let aliases = other
+            .get_aliases(&mut trans)
+            .try_collect_vec()
+            .await
+            .context(TagSQLxSnafu)?;
         for alias in aliases {
-            self.add_alias(&mut trans, &alias.name).await?;
+            self.add_alias(&mut trans, &alias.name)
+                .await
+                .context(TagSQLxSnafu)?;
         }
 
-        let parents = other.get_parents(&mut trans).try_collect_vec().await?;
-        for parent in parents {
-            self.add_parent(&mut trans, parent.id).await?;
-        }
+        let parents = other
+            .get_parents(&mut trans)
+            .try_collect_vec()
+            .await
+            .context(TagSQLxSnafu)?;
+        self.add_parents(&mut trans, &parents).await?;
 
-        let children = other.get_children(&mut trans).try_collect_vec().await?;
-        for child in children {
-            self.add_child(&mut trans, child.id).await?;
-        }
+        let children = other
+            .get_children(&mut trans)
+            .try_collect_vec()
+            .await
+            .context(TagSQLxSnafu)?;
+        self.add_children(&mut trans, &children).await?;
 
-        other.delete(&mut trans).await?;
+        other.delete(&mut trans).await.context(TagSQLxSnafu)?;
 
-        trans.commit().await.context(SqlxSnafu)?;
+        trans.commit().await.context(TransactionSnafu)?;
         Ok(())
     }
 }

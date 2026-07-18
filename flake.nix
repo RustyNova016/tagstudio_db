@@ -41,7 +41,6 @@
               # SQLx
               sqlx-cli
 
-
               (rust-bin.stable.latest.default.override {
                 extensions = [
                   "cargo"

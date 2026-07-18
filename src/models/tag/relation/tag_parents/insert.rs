@@ -1,11 +1,14 @@
+use sequelles::InsertOrIgnore;
 use snafu::ResultExt;
 use sqlx::Acquire;
 use tracing::debug;
 
-use crate::SqlxError;
 use crate::Tag;
-use crate::models::errors::sqlx_error::SqlxSnafu;
+use crate::models::tag::error::TagError;
+use crate::models::tag::error::TagParentSnafu;
+use crate::models::tag::error::TransactionSnafu;
 use crate::models::tag_parent::TagParent;
+use crate::models::tag_parent::TagParentSqlError;
 
 impl Tag {
     /// Add a child tag to this tag
@@ -13,7 +16,7 @@ impl Tag {
         &self,
         conn: &mut sqlx::SqliteConnection,
         child_id: i64,
-    ) -> Result<TagParent, SqlxError> {
+    ) -> Result<Option<TagParent>, TagParentSqlError> {
         debug!(
             "Adding child `{child_id}` to tag `{}` ({})",
             self.name, self.id
@@ -23,7 +26,7 @@ impl Tag {
             child_id,
             parent_id: self.id,
         }
-        .insert(conn)
+        .insert_or_ignore(conn)
         .await
     }
 
@@ -31,14 +34,16 @@ impl Tag {
         &self,
         conn: &mut sqlx::SqliteConnection,
         tags: &Vec<Tag>,
-    ) -> Result<(), SqlxError> {
-        let mut trans = conn.begin().await.context(SqlxSnafu)?;
+    ) -> Result<(), TagError> {
+        let mut trans = conn.begin().await.context(TransactionSnafu)?;
 
         for tag in tags {
-            self.add_child(&mut trans, tag.id).await?;
+            self.add_child(&mut trans, tag.id)
+                .await
+                .context(TagParentSnafu)?;
         }
 
-        trans.commit().await.context(SqlxSnafu)?;
+        trans.commit().await.context(TransactionSnafu)?;
 
         Ok(())
     }
@@ -47,7 +52,7 @@ impl Tag {
         &self,
         conn: &mut sqlx::SqliteConnection,
         parent_id: i64,
-    ) -> Result<TagParent, SqlxError> {
+    ) -> Result<Option<TagParent>, TagParentSqlError> {
         debug!(
             "Adding parent `{parent_id}` to tag `{}` ({})",
             self.name, self.id
@@ -57,7 +62,7 @@ impl Tag {
             child_id: self.id,
             parent_id,
         }
-        .insert(conn)
+        .insert_or_ignore(conn)
         .await
     }
 
@@ -65,14 +70,16 @@ impl Tag {
         &self,
         conn: &mut sqlx::SqliteConnection,
         tags: &Vec<Tag>,
-    ) -> Result<(), SqlxError> {
-        let mut trans = conn.begin().await.context(SqlxSnafu)?;
+    ) -> Result<(), TagError> {
+        let mut trans = conn.begin().await.context(TransactionSnafu)?;
 
         for tag in tags {
-            self.add_parent(&mut trans, tag.id).await?;
+            self.add_parent(&mut trans, tag.id)
+                .await
+                .context(TagParentSnafu)?;
         }
 
-        trans.commit().await.context(SqlxSnafu)?;
+        trans.commit().await.context(TransactionSnafu)?;
 
         Ok(())
     }

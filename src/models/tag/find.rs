@@ -41,4 +41,14 @@ impl Tag {
 
         EqTagString(name).fetch_all(conn).await
     }
+
+    /// Get all the tags that match a string. This means any tag that have the same name, shorthand, or alias
+    pub async fn find_by_name_or_alias(
+        conn: &mut sqlx::SqliteConnection,
+        name: String,
+    ) -> Result<Vec<Tag>, SqlxError> {
+        debug!("Searching tag `{name}` by name");
+
+        EqTagString(name).fetch_all(conn).await
+    }
 }
