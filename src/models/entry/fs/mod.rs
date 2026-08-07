@@ -1,37 +1,15 @@
 use std::fs::rename;
 use std::path::Path;
-use std::path::PathBuf;
 
 use sequelles::table::update::UpdateSelf;
-use snafu::ResultExt as _;
-use sqlx::Acquire;
 
 use crate::models::entry::Entry;
-use crate::models::errors::sqlx_error::SqlxSnafu;
-use crate::models::library_path::LibraryPath;
 
 pub mod merge_entry;
 pub mod merge_same_entry;
 pub mod move_entry;
 pub mod move_or_merge;
 impl Entry {
-    pub async fn fs_path_to_library_path(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-        path: &Path,
-    ) -> Result<LibraryPath, crate::Error> {
-        let folder = self.get_folder(&mut *conn).await?;
-
-        let relative_path = path
-            .strip_prefix(&folder.path)
-            .map_err(|_| crate::Error::PathNotInFolder)?;
-
-        Ok(LibraryPath {
-            folder_path: folder.path_as_pathbuf(),
-            relative_path: relative_path.to_path_buf(),
-        })
-    }
-
     /// Move the underlying file of the entry somewhere else in the library
     ///
     /// This takes in a cannonical path to move the file to.
@@ -42,11 +20,10 @@ impl Entry {
         &mut self,
         conn: &mut sqlx::SqliteConnection,
         new_lib_path: &Path,
+        library_path: &Path,
     ) -> Result<(), crate::Error> {
-        let folder = self.get_folder(&mut *conn).await?;
-
         if new_lib_path.try_exists()?
-            || !Entry::find_by_cannon_path(conn, new_lib_path)
+            || !Entry::find_by_full_path(conn, new_lib_path, library_path)
                 .await?
                 .is_empty()
         {
@@ -55,12 +32,16 @@ impl Entry {
             ));
         }
 
-        let relative_path = new_lib_path
-            .strip_prefix(&folder.path)
+        let new_relative_path = new_lib_path
+            .strip_prefix(library_path)
             .map_err(|_| crate::Error::PathNotInFolder)?;
 
-        self.move_file_inner(conn, &relative_path.to_string_lossy())
-            .await
+        self.move_file_inner(
+            conn,
+            &new_relative_path.to_string_lossy(),
+            new_relative_path,
+        )
+        .await
     }
 
     /// Move the underlying file of the entry somewhere else in the library.
@@ -70,30 +51,22 @@ impl Entry {
         &mut self,
         conn: &mut sqlx::SqliteConnection,
         new_lib_path: &str,
+        library_root: &Path,
     ) -> Result<(), crate::Error> {
-        let prev_path = self.get_global_path(conn).await?;
+        let prev_path = self.get_full_path(library_root);
+        let new_path = library_root.join(new_lib_path);
 
-        let mut trans = conn.begin().await.context(SqlxSnafu)?;
-
-        let root_path = self.get_folder(&mut trans).await?.path;
-        let mut path = PathBuf::from(root_path);
-        path.push(new_lib_path);
-
-        if self.exists_on_disk(&mut trans).await? {
-            rename(prev_path, path)?;
+        if self.exists_on_disk(library_root)? {
+            rename(prev_path, new_path)?;
         }
 
         self.path = new_lib_path.to_string();
-        self.update_self(&mut trans).await?;
+        self.update_self(conn).await?;
 
-        trans.commit().await.context(SqlxSnafu)?;
         Ok(())
     }
 
-    pub async fn exists_on_disk(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<bool, crate::Error> {
-        Ok(self.get_global_path(conn).await?.try_exists()?)
+    pub fn exists_on_disk(&self, library_root: &Path) -> Result<bool, crate::Error> {
+        Ok(self.get_full_path(library_root).try_exists()?)
     }
 }

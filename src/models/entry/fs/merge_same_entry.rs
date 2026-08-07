@@ -1,4 +1,5 @@
 use std::io;
+use std::path::Path;
 
 use filium::path::PathExt;
 use snafu::ResultExt;
@@ -14,9 +15,10 @@ impl Entry {
         &self,
         conn: &mut sqlx::SqliteConnection,
         other: Self,
+        library_root: &Path,
     ) -> Result<(), MergeSameEntryError> {
-        let self_global_path = self.get_global_path(conn).await.context(DatabaseSnafu)?;
-        let other_global_path = other.get_global_path(conn).await.context(DatabaseSnafu)?;
+        let self_global_path = self.get_full_path(library_root);
+        let other_global_path = other.get_full_path(library_root);
 
         // Check if the files are the same
         if !self_global_path
@@ -27,7 +29,7 @@ impl Entry {
         }
 
         // Same, so we merge
-        self.merge_entry(conn, other)
+        self.merge_entry(conn, other, library_root)
             .await
             .context(MergeEntrySnafu)?;
 

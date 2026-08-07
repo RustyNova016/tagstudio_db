@@ -12,7 +12,6 @@ impl Entry {
         let sql;
         sea_query::sqlx::sqlite::query_as!(
             sql = "INSERT INTO `entries` VALUES (NULL,
-                {self.folder_id},
                 {self.path},
                 {self.filename},
                 {self.suffix},
