@@ -38,6 +38,28 @@ pub trait QueryEntryFilter {
         }
     }
 
+    fn fetch_one(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> impl std::future::Future<Output = Result<Option<Entry>, SqlxError>> + Send
+    where
+        Self: Sync,
+    {
+        async {
+            let sql = self
+                .as_entry_select(&mut 1)
+                .map(|sql| format!("{sql} LIMIT 1"))
+                .unwrap_or_else(|| "SELECT * FROM `entries` LIMIT 1".to_string());
+
+            println!("{sql}");
+            let query = sqlx::query_as(AssertSqlSafe(sql));
+            self.bind(query)
+                .fetch_optional(conn)
+                .await
+                .context(SqlxSnafu)
+        }
+    }
+
     fn fetch_optional(
         &self,
         conn: &mut sqlx::SqliteConnection,

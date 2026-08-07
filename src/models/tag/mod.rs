@@ -21,7 +21,7 @@ pub mod insert;
 pub mod relation;
 pub mod update;
 
-#[derive(Debug, FromRow, Clone)]
+#[derive(Debug, FromRow, Clone, PartialEq, Eq)]
 pub struct Tag {
     pub id: i64,
     pub name: String,
