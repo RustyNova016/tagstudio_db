@@ -1,4 +1,5 @@
 use std::backtrace::Backtrace;
+use std::path::Path;
 
 use snafu::ResultExt;
 use snafu::Snafu;
@@ -17,6 +18,7 @@ impl Entry {
         &self,
         conn: &mut sqlx::SqliteConnection,
         other: Self,
+        library_root: &Path,
     ) -> Result<(), MergeEntryError> {
         let mut trans = conn.begin().await.context(SqlxSnafu).context(SqlSnafu)?;
 
@@ -30,7 +32,7 @@ impl Entry {
             .await
             .context(SqlSnafu)?;
 
-        let other_path = other.get_global_path(&mut trans).await.context(SqlSnafu)?;
+        let other_path = other.get_full_path(library_root);
         other.delete(&mut trans).await.context(SqlSnafu)?;
 
         if other_path.exists() {

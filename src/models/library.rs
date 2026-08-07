@@ -15,7 +15,6 @@ use crate::client::conn_pool::PoolManager;
 use crate::client::conn_pool::TSConnectionPool;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
-use crate::models::folder::Folder;
 
 /// A struct representing a TagStudio library.
 pub struct Library {
@@ -127,15 +126,6 @@ impl Library {
             path: "".into(),
             db: pool,
         })
-    }
-
-    /// Get the [`Folder`] that is at the root of the directory
-    pub async fn get_root_db_folder(
-        &self,
-        conn: &mut sqlx::SqliteConnection,
-    ) -> Result<Option<Folder>, SqlxError> {
-        let path = self.path.to_string_lossy();
-        Folder::find_by_path(conn, &path).await
     }
 }
 

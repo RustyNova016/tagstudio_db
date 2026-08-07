@@ -25,14 +25,6 @@ INSERT INTO namespaces VALUES('tagstudio-shades','TagStudio Shades');
 INSERT INTO namespaces VALUES('tagstudio-earth-tones','TagStudio Earth Tones');
 INSERT INTO namespaces VALUES('tagstudio-grayscale','TagStudio Grayscale');
 INSERT INTO namespaces VALUES('tagstudio-neon','TagStudio Neon');
-CREATE TABLE folders (
-	id INTEGER NOT NULL, 
-	path VARCHAR NOT NULL, 
-	uuid VARCHAR NOT NULL, 
-	PRIMARY KEY (id), 
-	UNIQUE (path), 
-	UNIQUE (uuid)
-);
 CREATE TABLE value_type (
 	"key" VARCHAR NOT NULL, 
 	name VARCHAR NOT NULL, 
@@ -145,7 +137,6 @@ INSERT INTO tag_colors VALUES('neon-magenta','tagstudio-neon','Neon Magenta','#2
 INSERT INTO tag_colors VALUES('neon-white','tagstudio-neon','Neon White','#131315','#F2F1F8',1);
 CREATE TABLE entries (
 	id INTEGER NOT NULL, 
-	folder_id INTEGER NOT NULL, 
 	path VARCHAR NOT NULL, 
 	filename VARCHAR NOT NULL, 
 	suffix VARCHAR NOT NULL, 
@@ -153,7 +144,6 @@ CREATE TABLE entries (
 	date_modified DATETIME, 
 	date_added DATETIME, 
 	PRIMARY KEY (id), 
-	FOREIGN KEY(folder_id) REFERENCES folders (id), 
 	UNIQUE (path)
 );
 CREATE TABLE boolean_fields (

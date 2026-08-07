@@ -1,4 +1,6 @@
 use std::io;
+use std::path::Path;
+use std::path::StripPrefixError;
 
 use filium::path::PathExt;
 use sequelles::table::update::UpdateSelf;
@@ -9,17 +11,17 @@ use crate::Entry;
 use crate::SqlxError;
 use crate::models::entry::EntrySqlError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
-use crate::models::library_path::LibraryPath;
 
 impl Entry {
-    /// Move an entry in the library and on disk. This takes in a global path.
+    /// Move an entry in the library and on disk. This takes in a full path.
     ///
     /// This function is really conservative, and won't delete any file if unsure.
     /// The only time a file is deleted, is when there's an entry less file at the destination, and both have the same hash
     pub async fn move_entry(
         &mut self,
         conn: &mut sqlx::SqliteConnection,
-        new_path: &LibraryPath,
+        new_path: &Path,
+        library_root: &Path,
     ) -> Result<(), MoveEntryError> {
         // Start a transaction to prevent concurent writes
         let mut trans = conn
@@ -28,40 +30,29 @@ impl Entry {
             .context(SqlxSnafu)
             .context(DatabaseSnafu)?;
 
-        // Check if we aren't changing the library folder
-        let prev_path = self
-            .get_library_path(&mut trans)
-            .await
-            .context(DatabaseSnafu)?;
-
-        if prev_path.folder_path != new_path.folder_path {
-            return InvalidFolderSnafu.fail();
-        }
+        let prev_path = self.get_full_path(library_root);
+        let relative_new_path = new_path
+            .strip_prefix(library_root)
+            .context(FileNotInLibrarySnafu)?;
 
         // Check if there's already an entry
-        let other_entries = Self::find_by_library_path(&mut trans, new_path)
+        let other_entries = Self::find_by_path(&mut trans, &new_path.to_string_lossy())
             .await
             .context(DatabaseSnafu)?;
+
         if !other_entries.is_empty() {
             return EntryPresentSnafu { other_entries }.fail();
         }
 
-        // No entry. Let's start the move
-        let new_relatve_path = new_path.relative_path.to_string_lossy().to_string();
-
         // Let's move the file, and overwrite if there's the same hash. This allows for non entry files to be merged in case of a manual copy.
         // Since the file is the same, and there's no database entry about it, this means that there's no data lost (Maybe just Reflinks on BTRFS but shhh)
-        if !prev_path
-            .as_fs_path()
-            .smart_move(&new_path.as_fs_path())
-            .context(MoveSnafu)?
-        {
+        if !prev_path.smart_move(new_path).context(MoveSnafu)? {
             // NOT MOVED! There is a file there that is blocking us. Let's return an error
             return DestinationOccupiedSnafu.fail();
         }
 
         // We have moved! Now let's update `self` and commit the changes to the database
-        self.path = new_relatve_path;
+        self.path = relative_new_path.display().to_string();
         self.update_self(&mut trans).await.context(EntrySqlSnafu)?;
 
         trans
@@ -95,6 +86,10 @@ pub enum MoveEntryError {
     /// Couldn't move the file due to another being in the target path
     DestinationOccupied,
 
-    /// The entry's library folder cannot be changed (Yet)
-    InvalidFolder,
+    /// The destination of the file isn't in the library
+    FileNotInLibrary {
+        source: StripPrefixError,
+        #[snafu(implicit)]
+        location: snafu::Location,
+    },
 }
