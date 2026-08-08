@@ -59,6 +59,10 @@ impl TagSearchQuery {
         Self::EqTagString(EqTagString::from(value))
     }
 
+    pub fn invert(self) -> Self {
+        Self::Not(QueryNot(self.boxed()))
+    }
+
     pub fn add_children_tags_opaque(self) -> Self {
         Self::EqTagOrChildren(EqTagOrChildren(self.boxed()))
     }
@@ -69,6 +73,10 @@ impl TagSearchQuery {
 
     pub fn or(self, other: Self) -> Self {
         Self::Or(QueryOr(self.boxed(), other.boxed()))
+    }
+
+    pub fn and(self, other: Self) -> Self {
+        Self::And(QueryAnd(self.boxed(), other.boxed()))
     }
 
     pub fn any<T, F>(mut values: Vec<T>, mapping: F) -> Option<Self>

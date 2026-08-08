@@ -40,4 +40,20 @@ impl Tag {
         .map(|val| val.context(SqlxSnafu))
         .boxed()
     }
+
+    pub async fn get_entry_count(
+        &self,
+        conn: &mut sqlx::SqliteConnection,
+    ) -> Result<i64, SqlxError> {
+        sqlx::query_scalar(
+            "
+            SELECT COUNT(*)
+            FROM `tag_entries` 
+            WHERE `tag_entries`.`tag_id` = $1",
+        )
+        .bind(self.id)
+        .fetch_one(conn)
+        .await
+        .context(SqlxSnafu)
+    }
 }
