@@ -2,6 +2,7 @@ use snafu::ResultExt;
 
 use crate::SqlxError;
 use crate::Tag;
+use crate::client::db::traits::write_conn::WriteConnection;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 
 impl Tag {
@@ -49,7 +50,6 @@ mod test {
         cat_tag.update(conn).await.unwrap();
 
         let mut chat_tags = Tag::find_by_exact_name(conn, "Chat").await.unwrap();
-        println!("{chat_tags:#?}");
         assert_eq!(chat_tags.len(), 1);
         assert_eq!(chat_tags.pop().unwrap().id, cat_tag.id);
 
