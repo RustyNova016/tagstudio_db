@@ -7,7 +7,7 @@ pub mod select;
 pub mod update;
 
 #[derive(Debug, FromRow, Clone, PartialEq, Eq, sequelles::Table)]
-#[sequelles(db_name = "text_field", snafu)]
+#[sequelles(db_name = "text_fields", snafu)]
 #[sequelles(sqlite)]
 #[sequelles(update, insert_struct, select, delete)]
 #[sequelles(primary_key(key_name = "pk", columns(id)))]

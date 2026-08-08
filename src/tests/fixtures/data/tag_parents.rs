@@ -8,6 +8,8 @@ pub(super) async fn add_test_tag_parents(lib: &Library) {
     add_tag_parent(lib, "Meme", "Doge").await;
     add_tag_parent(lib, "Meme", "OIIA").await;
     add_tag_parent(lib, "Dog", "Doge").await;
+    add_tag_parent(lib, "Animal", "Dog").await;
+    add_tag_parent(lib, "Animal", "Cat").await;
 }
 
 async fn add_tag_parent(lib: &Library, parent: &str, child: &str) {

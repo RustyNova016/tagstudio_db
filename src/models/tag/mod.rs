@@ -21,7 +21,11 @@ pub mod insert;
 pub mod relation;
 pub mod update;
 
-#[derive(Debug, FromRow, Clone, PartialEq, Eq)]
+#[derive(Debug, FromRow, Clone, PartialEq, Eq, sequelles::Table)]
+#[sequelles(db_name = "tags", snafu)]
+#[sequelles(sqlite)]
+//#[sequelles(update, delete)]
+#[sequelles(primary_key(key_name = "pk", columns(id)))]
 pub struct Tag {
     pub id: i64,
     pub name: String,
