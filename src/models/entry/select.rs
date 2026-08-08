@@ -1,15 +1,42 @@
+use std::path::Path;
+
 use futures::Stream;
 use snafu::ResultExt as _;
 
 use crate::Entry;
 use crate::models::errors::sqlx_error::SqlxError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
+use crate::query::eq_absolute_path::EqAbsolutePath;
+use crate::query::eq_entry_id::EqEntryId;
+use crate::query::trait_entry_filter::QueryEntryFilter;
 
 impl Entry {
+    /// Get the row by its id
+    pub async fn find_by_id(
+        conn: &mut sqlx::SqliteConnection,
+        id: i64,
+    ) -> Result<Option<Self>, SqlxError> {
+        EqEntryId(id).fetch_optional(conn).await
+    }
+
     pub fn stream_entries(
         conn: &mut sqlx::SqliteConnection,
     ) -> std::pin::Pin<Box<dyn Stream<Item = Result<Entry, sqlx::Error>> + Send + '_>> {
         sqlx::query_as("SELECT * FROM `entries`").fetch(conn)
+    }
+
+    /// Get the entry by its cannon path (Aka, the library's root path + the file's path in the library)
+    pub async fn find_by_full_path(
+        conn: &mut sqlx::SqliteConnection,
+        path: &Path,
+        library_path: &Path,
+    ) -> Result<Vec<Self>, SqlxError> {
+        EqAbsolutePath {
+            path: path.to_string_lossy().to_string(),
+            library_path: library_path.to_string_lossy().to_string(),
+        }
+        .fetch_all(conn)
+        .await
     }
 
     /// Get the entry by its filename

@@ -1,6 +1,7 @@
 use std::backtrace::Backtrace;
 use std::path::Path;
 
+use sequelles::Delete;
 use snafu::ResultExt;
 use snafu::Snafu;
 use sqlx::Acquire;
@@ -9,6 +10,7 @@ use crate::Entry;
 use crate::SqlxError;
 use crate::TextField;
 use crate::models::datetime_field::DatetimeField;
+use crate::models::entry::EntrySqlError;
 use crate::models::errors::sqlx_error::SqlxSnafu;
 use crate::models::tag_entry::TagEntry;
 
@@ -33,7 +35,7 @@ impl Entry {
             .context(SqlSnafu)?;
 
         let other_path = other.get_full_path(library_root);
-        other.delete(&mut trans).await.context(SqlSnafu)?;
+        other.delete(&mut trans).await.context(EntrySqlSnafu)?;
 
         if other_path.exists() {
             trash::delete(other_path).context(TrashSnafu)?;
@@ -49,6 +51,10 @@ pub enum MergeEntryError {
     Sql {
         #[snafu(backtrace)]
         source: SqlxError,
+    },
+
+    EntrySqlError {
+        source: EntrySqlError,
     },
 
     Trash {

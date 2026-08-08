@@ -6,12 +6,6 @@ use std::path::PathBuf;
 use chrono::NaiveDateTime;
 use sqlx::FromRow;
 
-use crate::models::errors::sqlx_error::SqlxError;
-use crate::query::eq_absolute_path::EqAbsolutePath;
-use crate::query::eq_entry_id::EqEntryId;
-use crate::query::trait_entry_filter::QueryEntryFilter;
-
-pub mod delete;
 #[cfg(feature = "fs")]
 pub mod fs;
 pub mod insert;
@@ -37,28 +31,6 @@ pub struct Entry {
 }
 
 impl Entry {
-    /// Get the row by its id
-    pub async fn find_by_id(
-        conn: &mut sqlx::SqliteConnection,
-        id: i64,
-    ) -> Result<Option<Self>, SqlxError> {
-        EqEntryId(id).fetch_optional(conn).await
-    }
-
-    /// Get the entry by its cannon path (Aka, the library's root path + the file's path in the library)
-    pub async fn find_by_full_path(
-        conn: &mut sqlx::SqliteConnection,
-        path: &Path,
-        library_path: &Path,
-    ) -> Result<Vec<Self>, SqlxError> {
-        EqAbsolutePath {
-            path: path.to_string_lossy().to_string(),
-            library_path: library_path.to_string_lossy().to_string(),
-        }
-        .fetch_all(conn)
-        .await
-    }
-
     /// Get the full path on the filesystem
     pub fn get_full_path(&self, library_root: &Path) -> PathBuf {
         library_root.join(&self.path)

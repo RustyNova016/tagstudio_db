@@ -1,5 +1,7 @@
+mod tag_aliases;
 use crate::Library;
 use crate::tests::fixtures::data::entries::add_test_entries;
+use crate::tests::fixtures::data::tag_aliases::add_test_tag_aliases;
 use crate::tests::fixtures::data::tag_entries::add_test_tag_entries;
 use crate::tests::fixtures::data::tag_parents::add_test_tag_parents;
 use crate::tests::fixtures::data::tags::add_test_tags;
@@ -18,6 +20,7 @@ pub async fn get_test_library() -> Library {
     add_test_tags(&lib).await;
     add_test_tag_parents(&lib).await;
     add_test_tag_entries(&lib).await;
+    add_test_tag_aliases(&lib).await;
 
     lib
 }
