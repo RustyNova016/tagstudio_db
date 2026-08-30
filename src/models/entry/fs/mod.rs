@@ -20,10 +20,10 @@ impl Entry {
         &mut self,
         conn: &mut sqlx::SqliteConnection,
         new_lib_path: &Path,
-        library_path: &Path,
+        library_root: &Path,
     ) -> Result<(), crate::Error> {
         if new_lib_path.try_exists()?
-            || !Entry::find_by_full_path(conn, new_lib_path, library_path)
+            || !Entry::find_by_full_path(conn, new_lib_path, library_root)
                 .await?
                 .is_empty()
         {
@@ -33,13 +33,13 @@ impl Entry {
         }
 
         let new_relative_path = new_lib_path
-            .strip_prefix(library_path)
+            .strip_prefix(library_root)
             .map_err(|_| crate::Error::PathNotInFolder)?;
 
         self.move_file_inner(
             conn,
             &new_relative_path.to_string_lossy(),
-            new_relative_path,
+            library_root,
         )
         .await
     }
