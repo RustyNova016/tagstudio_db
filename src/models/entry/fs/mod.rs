@@ -36,12 +36,8 @@ impl Entry {
             .strip_prefix(library_root)
             .map_err(|_| crate::Error::PathNotInFolder)?;
 
-        self.move_file_inner(
-            conn,
-            &new_relative_path.to_string_lossy(),
-            library_root,
-        )
-        .await
+        self.move_file_inner(conn, &new_relative_path.to_string_lossy(), library_root)
+            .await
     }
 
     /// Move the underlying file of the entry somewhere else in the library.
