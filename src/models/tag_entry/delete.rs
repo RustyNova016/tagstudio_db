@@ -20,4 +20,20 @@ impl TagEntry {
 
         Ok(())
     }
+
+    pub async fn delete_by_pk(
+        conn: &mut sqlx::SqliteConnection,
+        entry_id: i64,
+        tag_id: i64,
+    ) -> Result<(), SqlxError> {
+        let sql;
+        sea_query::sqlx::sqlite::query!(
+            sql = "DELETE FROM `tag_entries` WHERE `tag_id` = {tag_id} AND `entry_id` = {entry_id}"
+        )
+        .execute(&mut *conn)
+        .await
+        .context(SqlxSnafu)?;
+
+        Ok(())
+    }
 }
