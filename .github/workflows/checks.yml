@@ -24,7 +24,7 @@ jobs:
           git branch -av
           git diff origin/${{ github.base_ref }}.. | tee git.diff
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@v32
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
